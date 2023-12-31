@@ -26,7 +26,7 @@ class GraphTopologicalSortTest {
         Nodes<String> nodes = new Nodes<>(node1, node2, node3, node4);
 
         //when
-        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
+        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.apply(nodes);
 
         //then
         assertEquals(3, sortedNodes.all().size());
@@ -58,7 +58,7 @@ class GraphTopologicalSortTest {
         Nodes<String> nodes = new Nodes<>(node1, node2, node3, node4, node5);
 
         //when
-        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
+        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.apply(nodes);
 
         //then
         assertEquals(5, sortedNodes.all().size());
@@ -87,7 +87,7 @@ class GraphTopologicalSortTest {
         Nodes<String> nodes = new Nodes<>(Set.of(node1, node2));
 
         //when
-        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
+        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.apply(nodes);
 
         //then
         assertEquals(1, sortedNodes.all().size());
@@ -103,7 +103,7 @@ class GraphTopologicalSortTest {
         Nodes<String> nodes = new Nodes<>(node1, node2);
 
         //when
-        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
+        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.apply(nodes);
 
         //then
         assertTrue(sortedNodes.all().isEmpty());
