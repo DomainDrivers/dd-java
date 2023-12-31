@@ -3,14 +3,14 @@ package domaindrivers.smartschedule.sorter;
 import java.util.List;
 
 
-public class GraphTopologicalSort {
+public class GraphTopologicalSort<T> {
 
-    public SortedNodes sort(Nodes nodes) {
+    public SortedNodes<T> sort(Nodes<T> nodes) {
         return createSortedNodesRecursively(nodes, SortedNodes.empty());
     }
 
-    private SortedNodes createSortedNodesRecursively(Nodes remainingNodes, SortedNodes accumulatedSortedNodes) {
-        List<Node> alreadyProcessedNodes = accumulatedSortedNodes.all()
+    private SortedNodes<T> createSortedNodesRecursively(Nodes remainingNodes, SortedNodes<T> accumulatedSortedNodes) {
+        List<Node<T>> alreadyProcessedNodes = accumulatedSortedNodes.all()
                 .stream()
                 .flatMap(n -> n.all().stream())
                 .toList();

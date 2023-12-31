@@ -5,18 +5,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record SortedNodes(List<Nodes> all) {
+public record SortedNodes<T>(List<Nodes<T>> all) {
 
-    public static SortedNodes empty() {
-        return new SortedNodes(new ArrayList<>());
+    public static <T> SortedNodes<T> empty() {
+        return new SortedNodes<>(new ArrayList<>());
     }
 
-    public SortedNodes add(Nodes newNodes) {
-        List<Nodes> result =
+    public SortedNodes<T> add(Nodes<T> newNodes) {
+        List<Nodes<T>> result =
                 Stream
                         .concat(this.all.stream(), Stream.of(newNodes))
                         .collect(Collectors.toList());
-        return new SortedNodes(result);
+        return new SortedNodes<>(result);
     }
 
     @Override

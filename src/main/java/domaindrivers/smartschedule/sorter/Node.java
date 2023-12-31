@@ -1,21 +1,20 @@
 package domaindrivers.smartschedule.sorter;
 
-import domaindrivers.smartschedule.planning.parallelization.Stage;
 
 import java.util.HashSet;
 import java.util.Objects;
 
-public record Node(String name, Nodes dependencies, Stage content) {
+public record Node<T>(String name, Nodes<T> dependencies, T content) {
     public Node(String name) {
-        this(name, new Nodes(new HashSet<>()), null);
+        this(name, new Nodes<>(new HashSet<>()), null);
     }
 
-    public Node(String name, Stage content) {
-        this(name, new Nodes(new HashSet<>()), content);
+    public Node(String name, T content) {
+        this(name, new Nodes<>(new HashSet<>()), content);
     }
 
-    public Node dependsOn(Node node) {
-        return new Node(this.name, this.dependencies.add(node), content);
+    public Node<T> dependsOn(Node<T> node) {
+        return new Node<>(this.name, this.dependencies.add(node), content);
     }
 
     @Override
@@ -27,7 +26,7 @@ public record Node(String name, Nodes dependencies, Stage content) {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Node node = (Node) o;
+        Node<?> node = (Node<?>) o;
         return name.equals(node.name);
     }
 

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 class SortedNodesToParallelizedStages {
 
-    ParallelStagesList calculate(SortedNodes sortedNodes) {
+    ParallelStagesList calculate(SortedNodes<Stage> sortedNodes) {
         List<ParallelStages> parallelized = sortedNodes
                 .all()
                 .stream()

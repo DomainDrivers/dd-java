@@ -10,23 +10,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GraphTopologicalSortTest {
 
-    static final GraphTopologicalSort GRAPH_TOPOLOGICAL_SORT = new GraphTopologicalSort();
+    static final GraphTopologicalSort<String> GRAPH_TOPOLOGICAL_SORT = new GraphTopologicalSort<>();
 
     @Test
     void testTopologicalSortWithSimpleDependencies() {
         //given
-        Node node1 = new Node("Node1");
-        Node node2 = new Node("Node2");
-        Node node3 = new Node("Node3");
-        Node node4 = new Node("Node4");
+        Node<String> node1 = new Node<>("Node1");
+        Node<String> node2 = new Node<>("Node2");
+        Node<String> node3 = new Node<>("Node3");
+        Node<String> node4 = new Node<>("Node4");
         node2 = node2.dependsOn(node1);
         node3 = node3.dependsOn(node1);
         node4 = node4.dependsOn(node2);
 
-        Nodes nodes = new Nodes(node1, node2, node3, node4);
+        Nodes<String> nodes = new Nodes<>(node1, node2, node3, node4);
 
         //when
-        SortedNodes sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
+        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
 
         //then
         assertEquals(3, sortedNodes.all().size());
@@ -45,20 +45,20 @@ class GraphTopologicalSortTest {
     @Test
     void testTopologicalSortWithLinearDependencies() {
         //given
-        Node node1 = new Node("Node1");
-        Node node2 = new Node("Node2");
-        Node node3 = new Node("Node3");
-        Node node4 = new Node("Node4");
-        Node node5 = new Node("Node5");
+        Node<String> node1 = new Node<>("Node1");
+        Node<String> node2 = new Node<>("Node2");
+        Node<String> node3 = new Node<>("Node3");
+        Node<String> node4 = new Node<>("Node4");
+        Node<String> node5 = new Node<>("Node5");
         node1 = node1.dependsOn(node2);
         node2 = node2.dependsOn(node3);
         node3 = node3.dependsOn(node4);
         node4 = node4.dependsOn(node5);
 
-        Nodes nodes = new Nodes(node1, node2, node3, node4, node5);
+        Nodes<String> nodes = new Nodes<>(node1, node2, node3, node4, node5);
 
         //when
-        SortedNodes sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
+        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
 
         //then
         assertEquals(5, sortedNodes.all().size());
@@ -82,12 +82,12 @@ class GraphTopologicalSortTest {
     @Test
     void testNodesWithoutDependencies() {
         //given
-        Node node1 = new Node("Node1");
-        Node node2 = new Node("Node2");
-        Nodes nodes = new Nodes(Set.of(node1, node2));
+        Node<String> node1 = new Node<>("Node1");
+        Node<String> node2 = new Node<>("Node2");
+        Nodes<String> nodes = new Nodes<>(Set.of(node1, node2));
 
         //when
-        SortedNodes sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
+        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
 
         //then
         assertEquals(1, sortedNodes.all().size());
@@ -96,14 +96,14 @@ class GraphTopologicalSortTest {
     @Test
     void testCyclicDependency() {
         //given
-        Node node1 = new Node("Node1");
-        Node node2 = new Node("Node2");
+        Node<String> node1 = new Node<>("Node1");
+        Node<String> node2 = new Node<>("Node2");
         node2 = node2.dependsOn(node1);
         node1 = node1.dependsOn(node2); // making it cyclic
-        Nodes nodes = new Nodes(node1, node2);
+        Nodes<String> nodes = new Nodes<>(node1, node2);
 
         //when
-        SortedNodes sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
+        SortedNodes<String> sortedNodes = GRAPH_TOPOLOGICAL_SORT.sort(nodes);
 
         //then
         assertTrue(sortedNodes.all().isEmpty());

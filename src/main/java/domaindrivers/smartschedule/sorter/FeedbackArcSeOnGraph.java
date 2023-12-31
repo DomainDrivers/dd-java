@@ -4,7 +4,7 @@ import java.util.*;
 
 public class FeedbackArcSeOnGraph {
 
-    public static List<Edge> calculate(List<Node> initialNodes) {
+    public static List<Edge> calculate(List<Node<String>> initialNodes) {
         Map<Integer, List<Integer>> adjacencyList = createAdjacencyList(initialNodes);
         int v = adjacencyList.size();
         List<Edge> feedbackEdges = new ArrayList<>();
@@ -27,7 +27,7 @@ public class FeedbackArcSeOnGraph {
         return feedbackEdges;
     }
 
-    private static Map<Integer, List<Integer>> createAdjacencyList(List<Node> initialNodes) {
+    private static Map<Integer, List<Integer>> createAdjacencyList(List<Node<String>> initialNodes) {
         Map<Integer, List<Integer>> adjacencyList = new HashMap<>();
 
         for (int i = 1; i <= initialNodes.size(); i++) {
@@ -36,7 +36,7 @@ public class FeedbackArcSeOnGraph {
 
         for (int i = 0; i < initialNodes.size(); i++) {
             List<Integer> dependencies = new ArrayList<>();
-            for (Node dependency : initialNodes.get(i).dependencies().nodes()) {
+            for (Node<String> dependency : initialNodes.get(i).dependencies().nodes()) {
                 dependencies.add(initialNodes.indexOf(dependency) + 1);
             }
             adjacencyList.put(i + 1, dependencies);

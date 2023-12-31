@@ -12,10 +12,10 @@ class FeedbackArcSetOnGraphTest {
     @Test
     void canFindMinimumNumberOfEdgesToRemoveToMakeTheGraphAcyclic() {
         //given
-        Node node1 = new Node("1");
-        Node node2 = new Node("2");
-        Node node3 = new Node("3");
-        Node node4 = new Node("4");
+        Node<String> node1 = new Node<>("1");
+        Node<String> node2 = new Node<>("2");
+        Node<String> node3 = new Node<>("3");
+        Node<String> node4 = new Node<>("4");
         node1 = node1.dependsOn(node2);
         node2 = node2.dependsOn(node3);
         node4 = node4.dependsOn(node3);
@@ -35,10 +35,10 @@ class FeedbackArcSetOnGraphTest {
     @Test
     void whenGraphIsAcyclicThereIsNothingToRemove() {
         //given
-        Node node1 = new Node("1");
-        Node node2 = new Node("2");
-        Node node3 = new Node("3");
-        Node node4 = new Node("4");
+        Node<String> node1 = new Node<>("1");
+        Node<String> node2 = new Node<>("2");
+        Node<String> node3 = new Node<>("3");
+        Node<String> node4 = new Node<>("4");
         node1 = node1.dependsOn(node2);
         node2 = node2.dependsOn(node3);
         node1 = node1.dependsOn(node4);
