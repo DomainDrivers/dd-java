@@ -4,20 +4,18 @@ import domaindrivers.smartschedule.sorter.Node;
 import domaindrivers.smartschedule.sorter.Nodes;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-class StagesToNodes implements Function<List<Stage>, Nodes<Stage>> {
+class StagesToNodes {
 
-    @Override
-    public Nodes<Stage> apply(List<Stage> stages) {
+    Nodes<Stage> calculate(List<Stage> stages) {
         Map<String, Node<Stage>> result = stages.stream()
                 .collect(Collectors.toMap(Stage::name, stage -> new Node<>(stage.name(), stage)));
 
         for (int i = 0; i < stages.size(); i++) {
             Stage stage = stages.get(i);
             result = explicitDependencies(stage, result);
-            result = sharedResources(stage, stages.stream().skip(i + 1).toList(), result);
+            result = sharedResources(stage, stages.stream().skip(i + 1).collect(Collectors.toList()), result);
         }
 
         return new Nodes<>(new HashSet<>(result.values()));

@@ -4,16 +4,12 @@ import domaindrivers.smartschedule.sorter.Node;
 import domaindrivers.smartschedule.sorter.SortedNodes;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toSet;
 
+class SortedNodesToParallelizedStages {
 
-class SortedNodesToParallelizedStages implements Function<SortedNodes<Stage>, ParallelStagesList> {
-
-    @Override
-    public ParallelStagesList apply(SortedNodes<Stage> sortedNodes) {
+    ParallelStagesList calculate(SortedNodes<Stage> sortedNodes) {
         List<ParallelStages> parallelized = sortedNodes
                 .all()
                 .stream()
