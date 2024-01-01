@@ -16,6 +16,10 @@ public class ProjectId implements Serializable {
         this.projectId = uuid;
     }
 
+    public static ProjectId from(UUID key) {
+        return new ProjectId(key);
+    }
+
     public UUID id() {
         return projectId;
     }

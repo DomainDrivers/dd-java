@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.UUID;
 
-import static domaindrivers.smartschedule.simulation.Capability.skill;
+import static domaindrivers.smartschedule.shared.capability.Capability.skill;
 import static domaindrivers.smartschedule.simulation.Demand.demandFor;
 import static java.math.BigDecimal.valueOf;
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,7 +50,7 @@ class SimulationScenarios {
                 .build();
 
         //when
-        Result result = simulationFacade.whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(simulatedProjects, simulatedAvailability);
+        Result result = simulationFacade.whatIsTheOptimalSetup(simulatedProjects, simulatedAvailability);
 
         //then
         assertEquals(108d, result.profit());
@@ -77,7 +77,7 @@ class SimulationScenarios {
                 .build();
 
         //when
-        Result result = simulationFacade.whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(simulatedProjects, simulatedAvailability);
+        Result result = simulationFacade.whatIsTheOptimalSetup(simulatedProjects, simulatedAvailability);
 
         //then
         assertEquals(99d, result.profit());
@@ -107,8 +107,8 @@ class SimulationScenarios {
         AvailableResourceCapability extraCapability = new AvailableResourceCapability(UUID.randomUUID(), skill("YT DRAMA COMMENTS"), JAN_1);
 
         //when
-        Result resultWithoutExtraResource = simulationFacade.whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(simulatedProjects, simulatedAvailability);
-        Result resultWithExtraResource = simulationFacade.whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(simulatedProjects, simulatedAvailability.add(extraCapability));
+        Result resultWithoutExtraResource = simulationFacade.whatIsTheOptimalSetup(simulatedProjects, simulatedAvailability);
+        Result resultWithExtraResource = simulationFacade.whatIsTheOptimalSetup(simulatedProjects, simulatedAvailability.add(extraCapability));
 
         //then
         assertEquals(99d, resultWithoutExtraResource.profit());
@@ -136,7 +136,7 @@ class SimulationScenarios {
 
 
         //when
-        Result result = simulationFacade.whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(simulatedProjects, simulatedAvailability);
+        Result result = simulationFacade.whatIsTheOptimalSetup(simulatedProjects, simulatedAvailability);
 
         //then
         assertEquals(PROJECT_1.toString(), result.chosenItems().get(0).name());

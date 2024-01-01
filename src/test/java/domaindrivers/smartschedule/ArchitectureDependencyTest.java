@@ -19,10 +19,12 @@ public class ArchitectureDependencyTest {
                 .layer("sorter").definedBy("domaindrivers.smartschedule.sorter..")
                 .layer("simulation").definedBy("domaindrivers.smartschedule.simulation..")
                 .layer("optimization").definedBy("domaindrivers.smartschedule.optimization..")
+                .layer("shared").definedBy("domaindrivers.smartschedule.shared..")
                 .whereLayer("parallelization").mayOnlyAccessLayers("sorter")
                 .whereLayer("sorter").mayNotAccessAnyLayer()
-                .whereLayer("simulation").mayOnlyAccessLayers("optimization")
-                .whereLayer("optimization").mayNotAccessAnyLayer()
+                .whereLayer("simulation").mayOnlyAccessLayers("optimization", "shared")
+                .whereLayer("optimization").mayOnlyAccessLayers("shared")
+                .whereLayer("shared").mayNotAccessAnyLayer()
                 .check(classes);
     }
 }

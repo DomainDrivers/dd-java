@@ -20,7 +20,7 @@ public class SimulationFacade {
         return (resultWith.profit() - newPricedCapability.value().doubleValue()) - resultWithout.profit();
     }
 
-    public Result whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(List<SimulatedProject> projectsSimulations, SimulatedCapabilities totalCapability) {
+    public Result whatIsTheOptimalSetup(List<SimulatedProject> projectsSimulations, SimulatedCapabilities totalCapability) {
         return optimizationFacade.calculate(toItems(projectsSimulations), toCapacity(totalCapability), Comparator.comparing(Item::value).reversed());
     }
 

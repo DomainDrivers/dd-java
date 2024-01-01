@@ -2,6 +2,7 @@ package domaindrivers.smartschedule.simulation;
 
 
 import domaindrivers.smartschedule.optimization.CapacityDimension;
+import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 
 import java.util.UUID;
