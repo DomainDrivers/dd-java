@@ -1,5 +1,8 @@
 package domaindrivers.smartschedule.simulation;
 
+import domaindrivers.smartschedule.optimization.OptimizationFacade;
+import domaindrivers.smartschedule.optimization.Result;
+import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,7 +22,7 @@ class SimulationScenarios {
     static final UUID STASZEK = UUID.randomUUID();
     static final UUID LEON = UUID.randomUUID();
 
-    SimulationFacade simulationFacade = new SimulationFacade();
+    SimulationFacade simulationFacade = new SimulationFacade(new OptimizationFacade());
 
     @Test
     void picksOptimalProjectBasedOnEarnings() {
@@ -51,7 +54,7 @@ class SimulationScenarios {
 
         //then
         assertEquals(108d, result.profit());
-        assertEquals(2, result.chosenProjects().size());
+        assertEquals(2, result.chosenItems().size());
     }
 
     @Test
@@ -78,7 +81,7 @@ class SimulationScenarios {
 
         //then
         assertEquals(99d, result.profit());
-        assertEquals(1, result.chosenProjects().size());
+        assertEquals(1, result.chosenItems().size());
     }
 
     @Test

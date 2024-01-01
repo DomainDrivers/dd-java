@@ -1,6 +1,8 @@
 package domaindrivers.smartschedule.simulation;
 
 
+import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
+
 import java.util.*;
 
 class AvailableCapabilitiesBuilder {

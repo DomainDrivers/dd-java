@@ -1,12 +1,16 @@
 package domaindrivers.smartschedule.simulation;
 
-record Demand(Capability capability, TimeSlot slot) {
+import domaindrivers.smartschedule.optimization.WeightDimension;
+import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
+
+record Demand(Capability capability, TimeSlot slot) implements WeightDimension<AvailableResourceCapability> {
 
     static Demand demandFor(Capability capability, TimeSlot slot) {
         return new Demand(capability, slot);
     }
 
-    boolean isSatisfiedBy(AvailableResourceCapability availableCapability) {
+    @Override
+    public boolean isSatisfiedBy(AvailableResourceCapability availableCapability) {
         return availableCapability.performs(this.capability()) &&
                 this.slot().within(availableCapability.timeSlot());
     }

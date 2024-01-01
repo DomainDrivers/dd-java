@@ -18,9 +18,11 @@ public class ArchitectureDependencyTest {
                 .layer("parallelization").definedBy("domaindrivers.smartschedule.planning.parallelization..")
                 .layer("sorter").definedBy("domaindrivers.smartschedule.sorter..")
                 .layer("simulation").definedBy("domaindrivers.smartschedule.simulation..")
+                .layer("optimization").definedBy("domaindrivers.smartschedule.optimization..")
                 .whereLayer("parallelization").mayOnlyAccessLayers("sorter")
                 .whereLayer("sorter").mayNotAccessAnyLayer()
-                .whereLayer("simulation").mayNotAccessAnyLayer()
+                .whereLayer("simulation").mayOnlyAccessLayers("optimization")
+                .whereLayer("optimization").mayNotAccessAnyLayer()
                 .check(classes);
     }
 }
