@@ -115,6 +115,33 @@ class SimulationScenarios {
         assertEquals(108d, resultWithExtraResource.profit());
     }
 
+    @Test
+    void picksOptimalProjectBasedOnReputation() {
+        //given
+        List<SimulatedProject> simulatedProjects = simulatedProjects()
+                .withProject(PROJECT_1)
+                .thatRequires(demandFor(skill("JAVA-MID"), JAN_1))
+                .thatCanGenerateReputationLoss(100)
+                .withProject(PROJECT_2)
+                .thatRequires(demandFor(skill("JAVA-MID"), JAN_1))
+                .thatCanGenerateReputationLoss(40)
+                .build();
+
+        //and there are
+        SimulatedCapabilities simulatedAvailability = simulatedCapabilities()
+                .withEmployee(STASZEK)
+                .thatBrings(skill("JAVA-MID"))
+                .thatIsAvailableAt(JAN_1)
+                .build();
+
+
+        //when
+        Result result = simulationFacade.whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(simulatedProjects, simulatedAvailability);
+
+        //then
+        assertEquals(PROJECT_1.toString(), result.chosenItems().get(0).name());
+    }
+
     SimulatedProjectsBuilder simulatedProjects() {
         return new SimulatedProjectsBuilder();
     }

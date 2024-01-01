@@ -6,6 +6,11 @@ public class OptimizationFacade {
 
     public Result calculate(List<Item> items,
                             TotalCapacity totalCapacity) {
+        return calculate(items, totalCapacity, Comparator.comparing(Item::value).reversed());
+    }
+
+    public Result calculate(List<Item> items,
+                            TotalCapacity totalCapacity, Comparator<Item> comparator) {
         int capacitiesSize = totalCapacity.size();
         double[] dp = new double[capacitiesSize + 1];
         List<Item>[] chosenItemsList = new List[capacitiesSize + 1];
@@ -28,7 +33,7 @@ public class OptimizationFacade {
         List<CapacityDimension> allCapacities = totalCapacity.capacities();
         Map<Item, Set<CapacityDimension>> itemToCapacitiesMap = new HashMap<>();
 
-        for (Item item : items.stream().sorted(Comparator.comparing(Item::value).reversed()).toList()) {
+        for (Item item : items.stream().sorted(comparator).toList()) {
             List<CapacityDimension> chosenCapacities =
                     matchCapacities(item.totalWeight(), allCapacities);
             allCapacities.removeAll(chosenCapacities);

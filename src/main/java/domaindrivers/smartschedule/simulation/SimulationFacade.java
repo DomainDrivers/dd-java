@@ -14,7 +14,7 @@ public class SimulationFacade {
     }
 
     public Result whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(List<SimulatedProject> projectsSimulations, SimulatedCapabilities totalCapability) {
-        return optimizationFacade.calculate(toItems(projectsSimulations), toCapacity(totalCapability));
+        return optimizationFacade.calculate(toItems(projectsSimulations), toCapacity(totalCapability), Comparator.comparing(Item::value).reversed());
     }
 
     private TotalCapacity toCapacity(SimulatedCapabilities simulatedCapabilities) {
@@ -33,7 +33,7 @@ public class SimulationFacade {
     private Item toItem(SimulatedProject simulatedProject) {
         List<Demand> missingDemands = simulatedProject.missingDemands().all();
         List<WeightDimension> weights = new ArrayList<>(missingDemands);
-        return new Item(simulatedProject.projectId().toString(), simulatedProject.earnings().doubleValue(), new TotalWeight(weights));
+        return new Item(simulatedProject.projectId().toString(), simulatedProject.calculateValue().doubleValue(), new TotalWeight(weights));
     }
 
 }
