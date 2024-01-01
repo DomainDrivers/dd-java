@@ -142,6 +142,38 @@ class SimulationScenarios {
         assertEquals(PROJECT_1.toString(), result.chosenItems().get(0).name());
     }
 
+    @Test
+    void checkIfItPaysOffToPayForCapability() {
+        //given
+        List<SimulatedProject> simulatedProjects = simulatedProjects()
+                .withProject(PROJECT_1)
+                .thatRequires(demandFor(skill("JAVA-MID"), JAN_1))
+                .thatCanEarn(valueOf(100))
+                .withProject(PROJECT_2)
+                .thatRequires(demandFor(skill("JAVA-MID"), JAN_1))
+                .thatCanEarn(valueOf(40))
+                .build();
+
+        //and there are
+        SimulatedCapabilities simulatedAvailability = simulatedCapabilities()
+                .withEmployee(STASZEK)
+                .thatBrings(skill("JAVA-MID"))
+                .thatIsAvailableAt(JAN_1)
+                .build();
+
+        //and there are
+        AdditionalPricedCapability slawek = new AdditionalPricedCapability(valueOf(9999), new AvailableResourceCapability(UUID.randomUUID(), skill("JAVA-MID"), JAN_1));
+        AdditionalPricedCapability staszek = new AdditionalPricedCapability(valueOf(3), new AvailableResourceCapability(UUID.randomUUID(), skill("JAVA-MID"), JAN_1));
+
+        //when
+        double buyingSlawek = simulationFacade.profitAfterBuyingNewCapability(simulatedProjects, simulatedAvailability, slawek);
+        double buyingStaszek = simulationFacade.profitAfterBuyingNewCapability(simulatedProjects, simulatedAvailability, staszek);
+
+        //then
+        assertEquals(-9959d, buyingSlawek); //we pay 9999 and get the project for 40
+        assertEquals(37d, buyingStaszek); //we pay 3 and get the project for 40
+    }
+
     SimulatedProjectsBuilder simulatedProjects() {
         return new SimulatedProjectsBuilder();
     }

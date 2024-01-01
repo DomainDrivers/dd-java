@@ -13,6 +13,13 @@ public class SimulationFacade {
         this.optimizationFacade = optimizationFacade;
     }
 
+    public double profitAfterBuyingNewCapability(List<SimulatedProject> projectsSimulations, SimulatedCapabilities capabilitiesWithoutNewOne, AdditionalPricedCapability newPricedCapability) {
+        SimulatedCapabilities capabilitiesWithNewResource = capabilitiesWithoutNewOne.add(newPricedCapability.availableResourceCapability());
+        Result resultWithout = optimizationFacade.calculate(toItems(projectsSimulations), toCapacity(capabilitiesWithoutNewOne), Comparator.comparing(Item::value).reversed());
+        Result resultWith = optimizationFacade.calculate(toItems(projectsSimulations), toCapacity(capabilitiesWithNewResource), Comparator.comparing(Item::value).reversed());
+        return (resultWith.profit() - newPricedCapability.value().doubleValue()) - resultWithout.profit();
+    }
+
     public Result whichProjectWithMissingDemandsIsMostProfitableToAllocateResourcesTo(List<SimulatedProject> projectsSimulations, SimulatedCapabilities totalCapability) {
         return optimizationFacade.calculate(toItems(projectsSimulations), toCapacity(totalCapability), Comparator.comparing(Item::value).reversed());
     }
