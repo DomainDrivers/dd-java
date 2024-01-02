@@ -17,7 +17,18 @@ class ScheduleBasedOnStartDayCalculator {
         Map<String, TimeSlot> scheduleMap = new HashMap<>();
         Instant currentStart = startDate;
         List<ParallelStages> allSorted = parallelizedStages.allSorted(comparing);
-        //TODO
+        for (ParallelStages stages : allSorted) {
+            Instant parallelizedStagesEnd = currentStart;
+            for (Stage stage : stages.stages()) {
+                Instant stageEnd = currentStart.plus(stage.duration());
+                scheduleMap.put(stage.stageName(), new TimeSlot(currentStart, stageEnd));
+                if (stageEnd.isAfter(parallelizedStagesEnd)) {
+                    parallelizedStagesEnd = stageEnd;
+                }
+            }
+            currentStart = parallelizedStagesEnd;
+
+        }
         return scheduleMap;
     }
 }
