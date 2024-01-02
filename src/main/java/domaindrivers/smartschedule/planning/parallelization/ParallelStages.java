@@ -23,7 +23,6 @@ public record ParallelStages(Set<Stage> stages) {
         return new ParallelStages(new HashSet<>(asList(stages)));
     }
 
-
     public Duration duration() {
         return stages
                 .stream()

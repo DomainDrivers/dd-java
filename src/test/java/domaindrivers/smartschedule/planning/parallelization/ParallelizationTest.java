@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.planning.parallelization;
 
+import domaindrivers.smartschedule.shared.ResourceName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;

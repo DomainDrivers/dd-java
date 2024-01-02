@@ -1,6 +1,8 @@
 package domaindrivers.smartschedule.planning.parallelization;
 
 
+import domaindrivers.smartschedule.shared.ResourceName;
+
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;

@@ -15,12 +15,14 @@ public class ArchitectureDependencyTest {
     @Test
     void checkDependencies() {
         layeredArchitecture().consideringOnlyDependenciesInLayers()
+                .layer("availability").definedBy("domaindrivers.smartschedule.availability..")
                 .layer("parallelization").definedBy("domaindrivers.smartschedule.planning.parallelization..")
                 .layer("sorter").definedBy("domaindrivers.smartschedule.sorter..")
                 .layer("simulation").definedBy("domaindrivers.smartschedule.simulation..")
                 .layer("optimization").definedBy("domaindrivers.smartschedule.optimization..")
                 .layer("shared").definedBy("domaindrivers.smartschedule.shared..")
-                .whereLayer("parallelization").mayOnlyAccessLayers("sorter")
+                .whereLayer("availability").mayOnlyAccessLayers("shared")
+                .whereLayer("parallelization").mayOnlyAccessLayers("sorter", "shared")
                 .whereLayer("sorter").mayNotAccessAnyLayer()
                 .whereLayer("simulation").mayOnlyAccessLayers("optimization", "shared")
                 .whereLayer("optimization").mayOnlyAccessLayers("shared")

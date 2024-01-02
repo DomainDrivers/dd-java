@@ -1,4 +1,4 @@
-package domaindrivers.smartschedule.planning.parallelization;
+package domaindrivers.smartschedule.shared;
 
 import java.util.Objects;
 

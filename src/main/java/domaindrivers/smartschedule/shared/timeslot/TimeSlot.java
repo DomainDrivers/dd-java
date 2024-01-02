@@ -72,7 +72,7 @@ public record TimeSlot(Instant from, Instant to) {
         return new TimeSlot(commonStart, commonEnd);
     }
 
-    public boolean isEmpty() {
+    boolean isEmpty() {
         return this.from.equals(this.to);
     }
 

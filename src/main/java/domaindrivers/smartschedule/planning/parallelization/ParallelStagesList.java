@@ -5,11 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Comparator.comparing;
+
 public record ParallelStagesList(List<ParallelStages> all) {
 
-    public static ParallelStagesList empty() {
-        return new ParallelStagesList(List.of());
-    }
 
     public static ParallelStagesList of(ParallelStages ... stages) {
         return new ParallelStagesList(List.of(stages));
@@ -35,6 +34,12 @@ public record ParallelStagesList(List<ParallelStages> all) {
                 .sorted(comparing)
                 .collect(Collectors.toList());
     }
+
+    public List<ParallelStages> allSorted() {
+        return allSorted(comparing(ParallelStages::print));
+    }
+
+
 
 }
 

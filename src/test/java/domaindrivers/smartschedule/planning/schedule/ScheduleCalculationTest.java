@@ -1,8 +1,10 @@
 package domaindrivers.smartschedule.planning.schedule;
 
+import domaindrivers.smartschedule.availability.Calendar;
+import domaindrivers.smartschedule.availability.Calendars;
 import domaindrivers.smartschedule.planning.parallelization.ParallelStages;
 import domaindrivers.smartschedule.planning.parallelization.ParallelStagesList;
-import domaindrivers.smartschedule.planning.parallelization.ResourceName;
+import domaindrivers.smartschedule.shared.ResourceName;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.planning.schedule;
 
+import domaindrivers.smartschedule.availability.Calendars;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 
