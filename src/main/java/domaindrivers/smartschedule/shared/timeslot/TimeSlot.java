@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.shared.timeslot;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -9,6 +10,10 @@ import java.util.List;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 public record TimeSlot(Instant from, Instant to) {
+
+    public static TimeSlot empty() {
+        return new TimeSlot(Instant.EPOCH, Instant.EPOCH);
+    }
 
     public static TimeSlot createDailyTimeSlotAtUTC(int year, int month, int day) {
         LocalDate thisDay = LocalDate.of(year, month, day);
@@ -56,5 +61,26 @@ public record TimeSlot(Instant from, Instant to) {
             result.add(new TimeSlot(this.to, other.to));
         }
         return result;
+    }
+
+    public TimeSlot commonPartWith(TimeSlot other) {
+        if (!this.overlapsWith(other)) {
+            return TimeSlot.empty();
+        }
+        Instant commonStart = this.from.isAfter(other.from) ? this.from : other.from;
+        Instant commonEnd = this.to.isBefore(other.to) ? this.to : other.to;
+        return new TimeSlot(commonStart, commonEnd);
+    }
+
+    public boolean isEmpty() {
+        return this.from.equals(this.to);
+    }
+
+    public Duration duration() {
+        return Duration.between(this.from, this.to);
+    }
+
+    public TimeSlot stretch(Duration duration) {
+        return new TimeSlot(this.from.minus(duration), this.to.plus(duration));
     }
 }
