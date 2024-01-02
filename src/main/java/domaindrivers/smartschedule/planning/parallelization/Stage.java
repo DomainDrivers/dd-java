@@ -11,6 +11,10 @@ import java.util.stream.Collectors;
 public record Stage(String stageName, Set<Stage> dependencies, Set<ResourceName> resources,
                     Duration duration) {
 
+    public Stage ofDuration(Duration duration) {
+        return new Stage(stageName, dependencies, resources, duration);
+    }
+
     public Stage(String name) {
         this(name, new HashSet<>(), new HashSet<>(), Duration.ZERO);
     }
@@ -45,18 +49,3 @@ public record Stage(String stageName, Set<Stage> dependencies, Set<ResourceName>
     }
 }
 
-record ResourceName(String name) {
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ResourceName that = (ResourceName) o;
-        return Objects.equals(name, that.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
-    }
-}
