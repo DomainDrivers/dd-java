@@ -49,7 +49,7 @@ class SpecializedWaterfallTest {
         projectFacade.defineProjectStages(projectId, stageBeforeCritical, criticalStage, stageAfterCritical);
 
         //and
-        ResourceName criticalResourceName = new ResourceName("criticalResourceName");
+        ResourceId criticalResourceName = ResourceId.newOne();
         ResourceId criticalCapabilityAvailability = resourceAvailableForCapabilityInPeriod(criticalResourceName, Capability.skill("JAVA"), JAN_1_6);
 
         //when
@@ -79,7 +79,7 @@ class SpecializedWaterfallTest {
     void verifyResourcesNotAvailable(ProjectId projectId,  ResourceId resource, TimeSlot requestedButNotAvailable) {
     }
 
-    ResourceId resourceAvailableForCapabilityInPeriod(ResourceName resource, Capability capability, TimeSlot slot) {
+    ResourceId resourceAvailableForCapabilityInPeriod(ResourceId resource, Capability capability, TimeSlot slot) {
         return null;
     }
 

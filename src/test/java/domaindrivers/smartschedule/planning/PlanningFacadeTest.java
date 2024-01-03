@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = {PlanningConfiguration.class, SmartScheduleApplication.class})
 @Import({TestDbConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql"})
+@Sql(scripts = {"classpath:schema-planning.sql", "classpath:schema-availability.sql"})
 class PlanningFacadeTest {
 
     @Autowired

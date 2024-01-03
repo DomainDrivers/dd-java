@@ -37,8 +37,7 @@ public class PlanChosenResources {
         Set<ResourceId> neededResources = neededResources(stages);
         Project project = projectRepository.findById(projectId).orElseThrow();
         defineResourcesWithinDates(projectId, neededResources, timeBoundaries);
-        //TODO when availability is implemented
-        Calendars neededResourcesCalendars = Calendars.of();
+        Calendars neededResourcesCalendars = availabilityFacade.loadCalendars(neededResources, timeBoundaries);
         Schedule schedule = createScheduleAdjustingToCalendars(neededResourcesCalendars, List.of(stages));
         project.addSchedule(schedule);
     }

@@ -15,8 +15,8 @@ class PlanningConfiguration {
     }
 
     @Bean
-    PlanChosenResources planChosenResourcesService(ProjectRepository projectRepository) {
-        return new PlanChosenResources(projectRepository, new AvailabilityFacade(null, null));
+    PlanChosenResources planChosenResourcesService(ProjectRepository projectRepository, AvailabilityFacade availabilityFacade) {
+        return new PlanChosenResources(projectRepository, availabilityFacade);
     }
 
 }

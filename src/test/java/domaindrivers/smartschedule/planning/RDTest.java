@@ -8,6 +8,7 @@ import domaindrivers.smartschedule.planning.schedule.Schedule;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -25,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Import({TestDbConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql"})
+@Sql(scripts = {"classpath:schema-planning.sql", "classpath:schema-availability.sql"})
 class RDTest {
 
     static final TimeSlot JANUARY = new TimeSlot(Instant.parse("2020-01-01T00:00:00.00Z"), Instant.parse("2020-01-31T00:00:00.00Z"));
@@ -39,10 +40,10 @@ class RDTest {
     @Autowired
     PlanningFacade projectFacade;
 
-    @MockBean
+    @Autowired
     AvailabilityFacade availabilityFacade;
 
-    @Disabled("not implemented yet")
+    @Test
     void researchAndDevelopmentProjectProcess() {
         //given
         ProjectId projectId =
@@ -101,7 +102,7 @@ class RDTest {
     }
 
     ResourceId resourceAvailableForCapabilityInPeriod(ResourceId resource, Capability capability, TimeSlot slot) {
-        //todo
+        availabilityFacade.createResourceSlots(resource, slot);
         return ResourceId.newOne();
     }
 

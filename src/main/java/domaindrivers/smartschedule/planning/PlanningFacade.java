@@ -75,7 +75,7 @@ public class PlanningFacade {
     }
 
     @Transactional
-    public void planCriticalStageWithResource(ProjectId projectId, Stage criticalStage, ResourceName criticalResource, TimeSlot stageTimeSlot) {
+    public void planCriticalStageWithResource(ProjectId projectId, Stage criticalStage, ResourceId resourceId, TimeSlot stageTimeSlot) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addSchedule(criticalStage, stageTimeSlot);
     }

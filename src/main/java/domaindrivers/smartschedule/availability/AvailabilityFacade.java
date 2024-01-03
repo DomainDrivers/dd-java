@@ -73,7 +73,7 @@ public class AvailabilityFacade {
         return availabilityReadModel.load(resourceId, normalized);
     }
 
-    Calendars loadCalendars(Set<ResourceId> resources, TimeSlot within) {
+    public Calendars loadCalendars(Set<ResourceId> resources, TimeSlot within) {
         TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
         return availabilityReadModel.loadAll(resources, normalized);
     }
