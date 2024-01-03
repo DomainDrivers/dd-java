@@ -53,29 +53,33 @@ class ProjectAllocations {
     }
 
     Optional<CapabilitiesAllocated> allocate(ResourceId resourceId, Capability capability, TimeSlot requestedSlot, Instant when) {
-        if (nothingAllocated() || !withinProjectTimeSlot(requestedSlot)) {
+        AllocatedCapability allocatedCapability = new AllocatedCapability(resourceId.id(), capability, requestedSlot);
+        Allocations newAllocations = allocations.add(allocatedCapability);
+        if (nothingAllocated(newAllocations) || !withinProjectTimeSlot(requestedSlot)) {
             return Optional.empty();
         }
-        return Optional.of(new CapabilitiesAllocated(null, null, null, null, null));
+        allocations = newAllocations;
+        return Optional.of(new CapabilitiesAllocated(allocatedCapability.allocatedCapabilityID(), projectId, missingDemands(), when));
     }
 
-    private boolean nothingAllocated() {
-        return false;
+    private boolean nothingAllocated(Allocations newAllocations) {
+        return newAllocations.equals(allocations);
     }
 
     private boolean withinProjectTimeSlot(TimeSlot requestedSlot) {
-        return false;
+        if (!hasTimeSlot()) {
+            return true;
+        }
+        return requestedSlot.within(timeSlot);
     }
 
     Optional<CapabilityReleased> release(UUID allocatedCapabilityId, TimeSlot timeSlot, Instant when) {
-        if (nothingReleased()) {
+        Allocations newAllocations = allocations.remove(allocatedCapabilityId, timeSlot);
+        if (newAllocations.equals(allocations)) {
             return Optional.empty();
         }
-        return Optional.of(new CapabilityReleased(null, null, null));
-    }
-
-    private boolean nothingReleased() {
-        return false;
+        this.allocations = newAllocations;
+        return Optional.of(new CapabilityReleased(projectId, missingDemands(), when));
     }
 
     Demands missingDemands() {
@@ -89,6 +93,17 @@ class ProjectAllocations {
     boolean hasTimeSlot() {
         return timeSlot != null && !timeSlot.equals(TimeSlot.empty());
     }
+
+    Optional<ProjectAllocationScheduled> defineSlot(TimeSlot timeSlot, Instant when) {
+        this.timeSlot = timeSlot;
+        return Optional.of(new ProjectAllocationScheduled(projectId, this.timeSlot, when));
+    }
+
+    Optional<ProjectAllocationsDemandsScheduled> addDemands(Demands newDemands, Instant when) {
+        this.demands = demands.withNew(newDemands);
+        return Optional.of(new ProjectAllocationsDemandsScheduled(projectId, missingDemands(), when));
+    }
+
 
 }
 

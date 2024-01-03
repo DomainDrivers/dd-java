@@ -19,7 +19,8 @@ class AllocationsToProjectTest {
     static final ResourceId ADMIN_ID = ResourceId.newOne();
     static final TimeSlot FEB_1 = TimeSlot.createDailyTimeSlotAtUTC(2020, 2, 1);
     static final TimeSlot FEB_2 = TimeSlot.createDailyTimeSlotAtUTC(2020, 2, 2);
-    static final TimeSlot JANUARY = TimeSlot.createDailyTimeSlotAtUTC(2020, 1, 1);
+    static final TimeSlot JANUARY = TimeSlot.createMonthlyTimeSlotAtUTC(2020, 1);
+    static final TimeSlot FEBRUARY = TimeSlot.createMonthlyTimeSlotAtUTC(2020, 2);
 
     @Test
     void canAllocate() {
@@ -173,6 +174,35 @@ class AllocationsToProjectTest {
         assertThat(allocations.allocations().all()).containsExactlyInAnyOrder(
                 new AllocatedCapability(ADMIN_ID.id(), permission("ADMIN"), oneHourBefore),
                 new AllocatedCapability(ADMIN_ID.id(), permission("ADMIN"), theRest));
+    }
+
+    @Test
+    void canChangeDemands() {
+        //given
+        Demands demands = Demands.of(new Demand(permission("ADMIN"), FEB_1), new Demand(Capability.skill("JAVA"), FEB_1));
+        //and
+        ProjectAllocations allocations = ProjectAllocations.withDemands(PROJECT_ID, demands);
+        //and
+        allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        //when
+        Optional<ProjectAllocationsDemandsScheduled> event = allocations.addDemands(Demands.of(new Demand(Capability.skill("PYTHON"), FEB_1)), WHEN);
+        //then
+        assertThat(allocations.missingDemands()).isEqualTo(Demands.allInSameTimeSlot(FEB_1, Capability.skill("JAVA"), Capability.skill("PYTHON")));
+        assertThat(event).contains(new ProjectAllocationsDemandsScheduled(event.get().uuid(), PROJECT_ID, Demands.allInSameTimeSlot(FEB_1, Capability.skill("JAVA"), Capability.skill("PYTHON")), WHEN));
+    }
+
+
+    @Test
+    void canChangeProjectDates() {
+        //given
+        ProjectAllocations allocations = new ProjectAllocations(PROJECT_ID, Allocations.none(), Demands.none(), JANUARY);
+
+        //when
+        Optional<ProjectAllocationScheduled> event = allocations.defineSlot(FEBRUARY, WHEN);
+
+        //then
+        assertThat(event).isNotNull();
+        assertThat(event).contains(new ProjectAllocationScheduled(event.get().uuid(), PROJECT_ID, FEBRUARY, WHEN));
     }
 
 }
