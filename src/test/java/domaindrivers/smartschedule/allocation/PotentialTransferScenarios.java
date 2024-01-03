@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.allocation.cashflow.Earnings;
 import domaindrivers.smartschedule.optimization.OptimizationFacade;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import domaindrivers.smartschedule.simulation.*;
@@ -31,9 +32,9 @@ class PotentialTransferScenarios {
     void simulatesMovingCapabilitiesToDifferentProject() {
         //given
         Project bankingSoft =
-                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
+                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, Earnings.of(9));
         Project insuranceSoft =
-                new Project(INSURANCE_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(90));
+                new Project(INSURANCE_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, Earnings.of(90));
         bankingSoft.add(STASZEK_JAVA_MID);
         PotentialTransfers projects = toPotentialTransfers(bankingSoft, insuranceSoft);
 
@@ -48,9 +49,9 @@ class PotentialTransferScenarios {
     void simulatesMovingCapabilitiesToDifferentProjectJustForAWhile() {
         //given
         Project bankingSoft =
-                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
+                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, Earnings.of(9));
         Project insuranceSoft =
-                new Project(INSURANCE_SOFT_ID, DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, valueOf(99));
+                new Project(INSURANCE_SOFT_ID, DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, Earnings.of(99));
         bankingSoft.add(STASZEK_JAVA_MID);
         PotentialTransfers projects = toPotentialTransfers(bankingSoft, insuranceSoft);
 
@@ -65,9 +66,9 @@ class PotentialTransferScenarios {
     void theMoveGivesZeroProfitWhenThereAreStillMissingDemands() {
         //given
         Project bankingSoft =
-                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
+                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, Earnings.of(9));
         Project insuranceSoft =
-                new Project(INSURANCE_SOFT_ID, DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, valueOf(99));
+                new Project(INSURANCE_SOFT_ID, DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, Earnings.of(99));
         bankingSoft.add(STASZEK_JAVA_MID);
         PotentialTransfers projects = toPotentialTransfers(bankingSoft, insuranceSoft);
 
@@ -81,7 +82,7 @@ class PotentialTransferScenarios {
     PotentialTransfers toPotentialTransfers(Project... projects) {
         Map<ProjectAllocationsId, Allocations> allocations = new HashMap<>();
         Map<ProjectAllocationsId, Demands> demands = new HashMap<>();
-        Map<ProjectAllocationsId, BigDecimal> earnings = new HashMap<>();
+        Map<ProjectAllocationsId, Earnings> earnings = new HashMap<>();
         for (Project project : projects) {
             allocations.put(project.id, project.allocations);
             demands.put(project.id, project.demands);
@@ -95,11 +96,11 @@ class PotentialTransferScenarios {
 class Project {
 
     ProjectAllocationsId id;
-    BigDecimal earnings;
+    Earnings earnings;
     Demands demands;
     Allocations allocations;
 
-    Project(ProjectAllocationsId id, Demands demands, BigDecimal earnings) {
+    Project(ProjectAllocationsId id, Demands demands, Earnings earnings) {
         this.id = id;
         this.demands = demands;
         this.earnings = earnings;

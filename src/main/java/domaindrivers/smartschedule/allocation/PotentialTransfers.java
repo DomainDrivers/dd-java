@@ -1,14 +1,14 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.allocation.cashflow.Earnings;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import domaindrivers.smartschedule.simulation.ProjectId;
 import domaindrivers.smartschedule.simulation.SimulatedProject;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-record PotentialTransfers(ProjectsAllocationsSummary summary, Map<ProjectAllocationsId, BigDecimal> earnings) {
+record PotentialTransfers(ProjectsAllocationsSummary summary, Map<ProjectAllocationsId, Earnings> earnings) {
 
     PotentialTransfers transfer(ProjectAllocationsId projectFrom, ProjectAllocationsId projectTo, AllocatedCapability capability, TimeSlot forSlot) {
         Allocations from = summary.projectAllocations().get(projectFrom);
@@ -27,7 +27,7 @@ record PotentialTransfers(ProjectsAllocationsSummary summary, Map<ProjectAllocat
     }
 
     List<SimulatedProject> toSimulatedProjects() {
-        return summary.projectAllocations().keySet().stream().map(project -> new SimulatedProject(ProjectId.from(project.id()), () -> earnings.get(project), getMissingDemands(project))).toList();
+        return summary.projectAllocations().keySet().stream().map(project -> new SimulatedProject(ProjectId.from(project.id()), () -> earnings.get(project).toBigDecimal(), getMissingDemands(project))).toList();
     }
 
     domaindrivers.smartschedule.simulation.Demands getMissingDemands(ProjectAllocationsId projectAllocationsId) {
