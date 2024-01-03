@@ -47,7 +47,12 @@ public record Stage(String stageName, Set<Stage> dependencies, Set<ResourceId> r
 
     @Override
     public int hashCode() {
-        return Objects.hash(stageName, dependencies, resources, duration);
+        return Objects.hash(stageName);
+    }
+
+    @Override
+    public String toString() {
+        return stageName;
     }
 }
 

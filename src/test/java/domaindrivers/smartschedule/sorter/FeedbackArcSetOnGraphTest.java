@@ -23,9 +23,9 @@ class FeedbackArcSetOnGraphTest {
         node3 = node3.dependsOn(node1);
 
         //when
-        List<Edge> toRemove = FeedbackArcSeOnGraph.calculate(List.of(node1, node2, node3, node4));
+        List<Edge> toRemove = new FeedbackArcSeOnGraph<String>().calculate(List.of(node1, node2, node3, node4));
 
-
+        //then
         assertThat(toRemove).containsExactlyInAnyOrder(
                 new Edge(3, 1),
                 new Edge(4, 3)
@@ -44,7 +44,7 @@ class FeedbackArcSetOnGraphTest {
         node1 = node1.dependsOn(node4);
 
         //when
-        List<Edge> toRemove = FeedbackArcSeOnGraph.calculate(List.of(node1, node2, node3, node4));
+        List<Edge> toRemove = new FeedbackArcSeOnGraph<String>().calculate(List.of(node1, node2, node3, node4));
 
         //then
         assertThat(toRemove).isEmpty();
