@@ -1,6 +1,7 @@
 package domaindrivers.smartschedule.planning;
 
 
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.*;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
 import domaindrivers.smartschedule.shared.ResourceName;
@@ -64,7 +65,7 @@ public class PlanningFacade {
     }
 
     @Transactional
-    public void defineResourcesWithinDates(ProjectId projectId, Set<ResourceName> chosenResources, TimeSlot timeBoundaries) {
+    public void defineResourcesWithinDates(ProjectId projectId, Set<ResourceId> chosenResources, TimeSlot timeBoundaries) {
         planChosenResourcesService.defineResourcesWithinDates(projectId, chosenResources, timeBoundaries);
     }
 

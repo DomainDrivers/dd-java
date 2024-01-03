@@ -1,11 +1,10 @@
 package domaindrivers.smartschedule.planning;
 
 import domaindrivers.smartschedule.TestDbConfiguration;
-import domaindrivers.smartschedule.allocation.ResourceId;
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
-import domaindrivers.smartschedule.shared.ResourceName;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Disabled;
@@ -50,13 +49,13 @@ class RDTest {
                 projectFacade.addNewProject("waterfall");
         //and
 
-        ResourceName r1 = new ResourceName("r1");
+        ResourceId r1 = ResourceId.newOne();
         ResourceId javaAvailableInJanuary = resourceAvailableForCapabilityInPeriod(r1, Capability.skill("JAVA"), JANUARY);
-        ResourceName r2 = new ResourceName("r2");
+        ResourceId r2 = ResourceId.newOne();
         ResourceId phpAvailableInFebruary = resourceAvailableForCapabilityInPeriod(r2, Capability.skill("PHP"), FEBRUARY);
-        ResourceName r3 = new ResourceName("r3");
+        ResourceId r3 = ResourceId.newOne();
         ResourceId csharpAvailableInMarch = resourceAvailableForCapabilityInPeriod(r3, Capability.skill("CSHARP"), MARCH);
-        Set<ResourceName> allResources = Set.of(r1, r2, r3);
+        Set<ResourceId> allResources = Set.of(r1, r2, r3);
 
         //when
         projectFacade.defineResourcesWithinDates(projectId, allResources, JANUARY);
@@ -101,7 +100,7 @@ class RDTest {
         projectIsNotParallelized(loaded);
     }
 
-    ResourceId resourceAvailableForCapabilityInPeriod(ResourceName resource, Capability capability, TimeSlot slot) {
+    ResourceId resourceAvailableForCapabilityInPeriod(ResourceId resource, Capability capability, TimeSlot slot) {
         //todo
         return ResourceId.newOne();
     }

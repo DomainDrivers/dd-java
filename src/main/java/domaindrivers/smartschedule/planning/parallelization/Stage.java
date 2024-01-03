@@ -1,7 +1,7 @@
 package domaindrivers.smartschedule.planning.parallelization;
 
 
-import domaindrivers.smartschedule.shared.ResourceName;
+import domaindrivers.smartschedule.availability.ResourceId;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public record Stage(String stageName, Set<Stage> dependencies, Set<ResourceName> resources,
+public record Stage(String stageName, Set<Stage> dependencies, Set<ResourceId> resources,
                     Duration duration) {
 
     public Stage ofDuration(Duration duration) {
@@ -32,8 +32,8 @@ public record Stage(String stageName, Set<Stage> dependencies, Set<ResourceName>
         return stageName;
     }
 
-    public Stage withChosenResourceCapabilities(ResourceName... resources) {
-        Set<ResourceName> collect = Arrays.stream(resources).collect(Collectors.toSet());
+    public Stage withChosenResourceCapabilities(ResourceId... resources) {
+        Set<ResourceId> collect = Arrays.stream(resources).collect(Collectors.toSet());
         return new Stage(stageName, dependencies, collect, duration);
     }
 

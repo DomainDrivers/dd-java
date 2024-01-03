@@ -16,18 +16,18 @@ public class AvailabilityFacade {
         this.availabilityRepository = availabilityRepository;
     }
 
-    public void createResourceSlots(ResourceAvailabilityId resourceId, TimeSlot timeslot) {
+    public void createResourceSlots(ResourceId resourceId, TimeSlot timeslot) {
         ResourceGroupedAvailability groupedAvailability = ResourceGroupedAvailability.of(resourceId, timeslot);
         availabilityRepository.saveNew(groupedAvailability);
     }
 
-    public void createResourceSlots(ResourceAvailabilityId resourceId, ResourceAvailabilityId parentId, TimeSlot timeslot) {
+    public void createResourceSlots(ResourceId resourceId, ResourceId parentId, TimeSlot timeslot) {
         ResourceGroupedAvailability groupedAvailability = ResourceGroupedAvailability.of(resourceId, timeslot, parentId);
         availabilityRepository.saveNew(groupedAvailability);
     }
 
     @Transactional
-    public boolean block(ResourceAvailabilityId resourceId, TimeSlot timeSlot, Owner requester) {
+    public boolean block(ResourceId resourceId, TimeSlot timeSlot, Owner requester) {
         ResourceGroupedAvailability toBlock = findGrouped(resourceId, timeSlot);
         return block(requester, toBlock);
     }
@@ -41,7 +41,7 @@ public class AvailabilityFacade {
     }
 
     @Transactional
-    public boolean release(ResourceAvailabilityId resourceId, TimeSlot timeSlot, Owner requester) {
+    public boolean release(ResourceId resourceId, TimeSlot timeSlot, Owner requester) {
         ResourceGroupedAvailability toRelease = findGrouped(resourceId, timeSlot);
         boolean result = toRelease.release(requester);
         if (result) {
@@ -51,7 +51,7 @@ public class AvailabilityFacade {
     }
 
     @Transactional
-    public boolean disable(ResourceAvailabilityId resourceId, TimeSlot timeSlot, Owner requester) {
+    public boolean disable(ResourceId resourceId, TimeSlot timeSlot, Owner requester) {
         ResourceGroupedAvailability toDisable = findGrouped(resourceId, timeSlot);
         boolean result = toDisable.disable(requester);
         if (result) {
@@ -60,17 +60,17 @@ public class AvailabilityFacade {
         return result;
     }
 
-    private ResourceGroupedAvailability findGrouped(ResourceAvailabilityId resourceId, TimeSlot within) {
+    public ResourceGroupedAvailability findGrouped(ResourceId resourceId, TimeSlot within) {
         TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
         return new ResourceGroupedAvailability(availabilityRepository.loadAllWithinSlot(resourceId, normalized));
     }
 
-    ResourceGroupedAvailability find(ResourceAvailabilityId resourceId, TimeSlot within) {
+    ResourceGroupedAvailability find(ResourceId resourceId, TimeSlot within) {
         TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
         return new ResourceGroupedAvailability(availabilityRepository.loadAllWithinSlot(resourceId, normalized));
     }
 
-    ResourceGroupedAvailability findByParentId(ResourceAvailabilityId parentId, TimeSlot within) {
+    ResourceGroupedAvailability findByParentId(ResourceId parentId, TimeSlot within) {
         TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
         return new ResourceGroupedAvailability(availabilityRepository.loadAllByParentIdWithinSlot(parentId, normalized));
     }

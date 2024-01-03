@@ -1,10 +1,10 @@
 package domaindrivers.smartschedule.planning.schedule;
 
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.availability.Calendar;
 import domaindrivers.smartschedule.availability.Calendars;
 import domaindrivers.smartschedule.planning.parallelization.ParallelStages;
 import domaindrivers.smartschedule.planning.parallelization.ParallelStagesList;
-import domaindrivers.smartschedule.shared.ResourceName;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
@@ -110,9 +110,9 @@ class ScheduleCalculationTest {
     @Test
     void canAdjustScheduleToAvailabilityOfNeededResources() {
         //given
-        ResourceName r1 = new ResourceName("r1");
-        ResourceName r2 = new ResourceName("r2");
-        ResourceName r3 = new ResourceName("r3");
+        ResourceId r1 = ResourceId.newOne();
+        ResourceId r2 = ResourceId.newOne();
+        ResourceId r3 = ResourceId.newOne();
         //and
         Stage stage1 = new Stage("Stage1")
                 .ofDuration(ofDays(3))

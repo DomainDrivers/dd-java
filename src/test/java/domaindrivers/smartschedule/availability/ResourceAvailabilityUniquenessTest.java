@@ -32,8 +32,8 @@ class ResourceAvailabilityUniquenessTest {
     @Test
     void cantSaveTwoAvailabilitiesWithSameResourceIdAndSegment() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
-        ResourceAvailabilityId anotherResourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
+        ResourceId anotherResourceId = ResourceId.newOne();
         ResourceAvailabilityId resourceAvailabilityId = ResourceAvailabilityId.newOne();
 
         //when

@@ -2,7 +2,7 @@ package domaindrivers.smartschedule.planning;
 
 import domaindrivers.smartschedule.SmartScheduleApplication;
 import domaindrivers.smartschedule.TestDbConfiguration;
-import domaindrivers.smartschedule.shared.ResourceName;
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
@@ -130,7 +130,7 @@ class PlanningFacadeTest {
         ProjectId projectId = projectFacade.addNewProject("project");
 
         //when
-        Set<ResourceName> neededResources = Set.of(new ResourceName("resource1"));
+        Set<ResourceId> neededResources = Set.of(ResourceId.newOne());
         TimeSlot firstHalfOfTheYear = new TimeSlot(Instant.parse("2021-01-01T00:00:00.00Z"), Instant.parse("2021-06-01T00:00:00.00Z"));
         projectFacade.defineResourcesWithinDates(projectId, neededResources, firstHalfOfTheYear);
 

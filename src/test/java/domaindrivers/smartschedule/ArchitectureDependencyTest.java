@@ -25,7 +25,7 @@ public class ArchitectureDependencyTest {
                 .layer("shared").definedBy("domaindrivers.smartschedule.shared..")
                 .whereLayer("availability").mayOnlyAccessLayers("shared")
                 .whereLayer("allocation").mayOnlyAccessLayers("shared", "availability", "cashflow", "simulation", "optimization")
-                .whereLayer("parallelization").mayOnlyAccessLayers("sorter", "shared")
+                .whereLayer("parallelization").mayOnlyAccessLayers("sorter", "shared", "availability")
                 .whereLayer("sorter").mayNotAccessAnyLayer()
                 .whereLayer("simulation").mayOnlyAccessLayers("optimization", "shared")
                 .whereLayer("optimization").mayOnlyAccessLayers("shared")

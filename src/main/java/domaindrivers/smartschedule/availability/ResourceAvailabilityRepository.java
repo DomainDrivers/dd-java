@@ -41,8 +41,8 @@ class ResourceAvailabilityRepository {
                 100,
                 (PreparedStatement ps, ResourceAvailability ra) -> {
                     ps.setObject(1, ra.id().id());
-                    ps.setObject(2, ra.resourceId().id());
-                    ps.setObject(3, ra.resourceParentId().id());
+                    ps.setObject(2, ra.resourceId().getId());
+                    ps.setObject(3, ra.resourceParentId().getId());
                     ps.setTimestamp(4, from(ra.segment().from()));
                     ps.setTimestamp(5, from(ra.segment().to()));
                     ps.setObject(6, null);
@@ -51,22 +51,22 @@ class ResourceAvailabilityRepository {
                 });
     }
 
-    List<ResourceAvailability> loadAllWithinSlot(ResourceAvailabilityId resourceId, TimeSlot segment) {
+    List<ResourceAvailability> loadAllWithinSlot(ResourceId resourceId, TimeSlot segment) {
         return jdbcTemplate
                 .query("""
                                 select * from availabilities where resource_id = ? 
                                 and from_date >= ? and to_date <= ?
                                 """, ResourceAvailabilityRowMapper.rowMapper,
-                        resourceId.id(), from(segment.from()), from(segment.to()));
+                        resourceId.getId(), from(segment.from()), from(segment.to()));
     }
 
-    List<ResourceAvailability> loadAllByParentIdWithinSlot(ResourceAvailabilityId parentId, TimeSlot segment) {
+    List<ResourceAvailability> loadAllByParentIdWithinSlot(ResourceId parentId, TimeSlot segment) {
         return jdbcTemplate
                 .query("""
                                 select * from availabilities where resource_parent_id = ? 
                                 and from_date >= ? and to_date <= ?
                                 """, ResourceAvailabilityRowMapper.rowMapper,
-                        parentId.id(), from(segment.from()), from(segment.to()));
+                        parentId.getId(), from(segment.from()), from(segment.to()));
     }
 
     boolean saveCheckingVersion(ResourceAvailability resourceAvailability) {
@@ -145,9 +145,9 @@ class ResourceAvailabilityRowMapper {
     static RowMapper<ResourceAvailability> rowMapper =
             (rs, rowNum) -> {
                 ResourceAvailabilityId resourceAvailabilityId = ResourceAvailabilityId.of(rs.getString("id"));
-                ResourceAvailabilityId resourceId = ResourceAvailabilityId.of(rs.getString("resource_id"));
+                ResourceId resourceId = ResourceId.of(rs.getString("resource_id"));
                 TimeSlot segment = new TimeSlot(rs.getTimestamp("from_date").toInstant(), rs.getTimestamp("to_date").toInstant());
-                ResourceAvailabilityId parentId = ResourceAvailabilityId.of(rs.getString("resource_parent_id"));
+                ResourceId parentId = ResourceId.of(rs.getString("resource_parent_id"));
                 boolean isDisabled = rs.getBoolean("disabled");
                 Owner result;
                 String id = rs.getString("taken_by");

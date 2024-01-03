@@ -1,9 +1,9 @@
 package domaindrivers.smartschedule.planning;
 
 import domaindrivers.smartschedule.TestDbConfiguration;
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
-import domaindrivers.smartschedule.shared.ResourceName;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -29,9 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class StandardWaterfallTest {
 
     static final Instant JAN_1 = Instant.parse("2020-01-01T00:00:00.00Z");
-    static final ResourceName RESOURCE_1 = new ResourceName("r1");
-    static final ResourceName RESOURCE_2 = new ResourceName("r2");
-    static final ResourceName RESOURCE_4 = new ResourceName("r4");
+    static final ResourceId RESOURCE_1 = ResourceId.newOne();
+    static final ResourceId RESOURCE_2 = ResourceId.newOne();
+    static final ResourceId RESOURCE_4 = ResourceId.newOne();
+
     static final TimeSlot JAN_1_2 = new TimeSlot(Instant.parse("2020-01-01T00:00:00.00Z"), Instant.parse("2020-01-02T00:00:00.00Z"));
     static final TimeSlot JAN_2_5 = new TimeSlot(Instant.parse("2020-01-02T00:00:00.00Z"), Instant.parse("2020-01-05T00:00:00.00Z"));
     static final TimeSlot JAN_2_12 = new TimeSlot(Instant.parse("2020-01-02T00:00:00.00Z"), Instant.parse("2020-01-12T00:00:00.00Z"));

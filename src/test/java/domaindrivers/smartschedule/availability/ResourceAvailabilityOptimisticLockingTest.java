@@ -38,7 +38,7 @@ class ResourceAvailabilityOptimisticLockingTest {
     void updateBumpsVersion() {
         //given
         ResourceAvailabilityId resourceAvailabilityId = ResourceAvailabilityId.newOne();
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         ResourceAvailability resourceAvailability = new ResourceAvailability(resourceAvailabilityId, resourceId, ONE_MONTH);
         resourceAvailabilityRepository.saveNew(resourceAvailability);
 
@@ -55,7 +55,7 @@ class ResourceAvailabilityOptimisticLockingTest {
     void cantUpdateConcurrently() throws InterruptedException {
         //given
         ResourceAvailabilityId resourceAvailabilityId = ResourceAvailabilityId.newOne();
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         ResourceAvailability resourceAvailability = new ResourceAvailability(resourceAvailabilityId, resourceId, ONE_MONTH);
         resourceAvailabilityRepository.saveNew(resourceAvailability);
         List<Boolean> results = new ArrayList<>();

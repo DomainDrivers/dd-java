@@ -187,7 +187,7 @@ class ResourceAvailabilityTest {
     }
 
     ResourceAvailability resourceAvailability() {
-        return new ResourceAvailability(resourceAvailability, ResourceAvailabilityId.newOne(), TimeSlot.createDailyTimeSlotAtUTC(2000, 1, 1));
+        return new ResourceAvailability(resourceAvailability, ResourceId.newOne(), TimeSlot.createDailyTimeSlotAtUTC(2000, 1, 1));
     }
 
 }

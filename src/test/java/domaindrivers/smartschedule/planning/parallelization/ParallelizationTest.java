@@ -1,6 +1,6 @@
 package domaindrivers.smartschedule.planning.parallelization;
 
-import domaindrivers.smartschedule.shared.ResourceName;
+import domaindrivers.smartschedule.availability.ResourceId;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -13,10 +13,10 @@ class ParallelizationTest {
 
     static final StageParallelization stageParallelization = new StageParallelization();
 
-    static final ResourceName LEON = new ResourceName("Leon");
-    static final ResourceName ERYK = new ResourceName("Eric");
-    static final ResourceName SLAWEK = new ResourceName("Sławek");
-    static final ResourceName KUBA = new ResourceName("Kuba");
+    static final ResourceId LEON = ResourceId.newOne();
+    static final ResourceId ERYK = ResourceId.newOne();
+    static final ResourceId SLAWEK = ResourceId.newOne();
+    static final ResourceId KUBA = ResourceId.newOne();
 
     @Test
     void everythingCanBeDoneInParallelWhenThereAreNoDependencies() {

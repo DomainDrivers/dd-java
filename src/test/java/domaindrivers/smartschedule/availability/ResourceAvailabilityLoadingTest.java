@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -33,7 +32,7 @@ public class ResourceAvailabilityLoadingTest {
     void canSaveAndLoadById() {
         //given
         ResourceAvailabilityId resourceAvailabilityId = ResourceAvailabilityId.newOne();
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         ResourceAvailability resourceAvailability = new ResourceAvailability(resourceAvailabilityId, resourceId, ONE_MONTH);
 
         //when

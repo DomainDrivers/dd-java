@@ -22,7 +22,7 @@ class AvailabilityFacadeTest {
     @Test
     void canCreateAvailabilitySlots() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
 
         //when
@@ -35,10 +35,10 @@ class AvailabilityFacadeTest {
     @Test
     void canCreateNewAvailabilitySlotsWithParentId() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
-        ResourceAvailabilityId resourceId2 = ResourceAvailabilityId.newOne();
-        ResourceAvailabilityId parentId = ResourceAvailabilityId.newOne();
-        ResourceAvailabilityId differentParentId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
+        ResourceId resourceId2 = ResourceId.newOne();
+        ResourceId parentId = ResourceId.newOne();
+        ResourceId differentParentId = ResourceId.newOne();
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
 
         //when
@@ -53,7 +53,7 @@ class AvailabilityFacadeTest {
     @Test
     void canBlockAvailabilities() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         Owner owner = Owner.newOne();
         availabilityFacade.createResourceSlots(resourceId, oneDay);
@@ -71,7 +71,7 @@ class AvailabilityFacadeTest {
     @Test
     void canDisableAvailabilities() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         Owner owner = Owner.newOne();
         availabilityFacade.createResourceSlots(resourceId, oneDay);
@@ -89,7 +89,7 @@ class AvailabilityFacadeTest {
     @Test
     void cantBlockEvenWhenJustSmallSegmentOfRequestedSlotIsBlocked() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         Owner owner = Owner.newOne();
         availabilityFacade.createResourceSlots(resourceId, oneDay);
@@ -110,7 +110,7 @@ class AvailabilityFacadeTest {
     @Test
     void canReleaseAvailability() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         TimeSlot fifteenMinutes = new TimeSlot(oneDay.from(), oneDay.from().plus(15, ChronoUnit.MINUTES));
         Owner owner = Owner.newOne();
@@ -130,7 +130,7 @@ class AvailabilityFacadeTest {
     @Test
     void cantReleaseEvenWhenJustPartOfSlotIsOwnedByTheRequester() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         TimeSlot jan_1 = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         TimeSlot jan_2 = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 2);
         TimeSlot jan_1_2 = new TimeSlot(jan_1.from(), jan_2.to());
@@ -155,7 +155,7 @@ class AvailabilityFacadeTest {
     @Test
     void oneSegmentCanBeTakenBySomeoneElseAfterRealising() {
         //given
-        ResourceAvailabilityId resourceId = ResourceAvailabilityId.newOne();
+        ResourceId resourceId = ResourceId.newOne();
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         TimeSlot fifteenMinutes = new TimeSlot(oneDay.from(), oneDay.from().plus(15, ChronoUnit.MINUTES));
         Owner owner = Owner.newOne();

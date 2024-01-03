@@ -1,6 +1,7 @@
 package domaindrivers.smartschedule.allocation;
 
 import domaindrivers.smartschedule.TestDbConfiguration;
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ class CapabilityAllocatingTest {
         //then
         assertTrue(result.isPresent());
         ProjectsAllocationsSummary summary = allocationFacade.findAllProjectsAllocations();
-        assertThat(summary.projectAllocations().get(projectId).all()).containsExactly(new AllocatedCapability(allocatableResourceId.id(), skillJava, oneDay));
+        assertThat(summary.projectAllocations().get(projectId).all()).containsExactly(new AllocatedCapability(allocatableResourceId.getId(), skillJava, oneDay));
         assertThat(summary.demands().get(projectId).all()).containsExactly(demand);
     }
 

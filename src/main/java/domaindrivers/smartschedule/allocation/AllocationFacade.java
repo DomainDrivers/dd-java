@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;

@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
@@ -172,8 +173,8 @@ class AllocationsToProjectTest {
         //then
         assertThat(event).contains(new CapabilityReleased(event.get().eventId(), PROJECT_ID, Demands.none(), WHEN));
         assertThat(allocations.allocations().all()).containsExactlyInAnyOrder(
-                new AllocatedCapability(ADMIN_ID.id(), permission("ADMIN"), oneHourBefore),
-                new AllocatedCapability(ADMIN_ID.id(), permission("ADMIN"), theRest));
+                new AllocatedCapability(ADMIN_ID.getId(), permission("ADMIN"), oneHourBefore),
+                new AllocatedCapability(ADMIN_ID.getId(), permission("ADMIN"), theRest));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
@@ -53,7 +54,7 @@ class ProjectAllocations {
     }
 
     Optional<CapabilitiesAllocated> allocate(ResourceId resourceId, Capability capability, TimeSlot requestedSlot, Instant when) {
-        AllocatedCapability allocatedCapability = new AllocatedCapability(resourceId.id(), capability, requestedSlot);
+        AllocatedCapability allocatedCapability = new AllocatedCapability(resourceId.getId(), capability, requestedSlot);
         Allocations newAllocations = allocations.add(allocatedCapability);
         if (nothingAllocated(newAllocations) || !withinProjectTimeSlot(requestedSlot)) {
             return Optional.empty();

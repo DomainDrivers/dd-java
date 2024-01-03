@@ -7,13 +7,13 @@ import java.util.Objects;
 class ResourceAvailability {
 
     private final ResourceAvailabilityId id;
-    private final ResourceAvailabilityId resourceId;
-    private final ResourceAvailabilityId resourceParentId;
+    private final ResourceId resourceId;
+    private final ResourceId resourceParentId;
     private final TimeSlot segment;
     private Blockade blockade;
     private int version = 0;
 
-    ResourceAvailability(ResourceAvailabilityId id, ResourceAvailabilityId resourceId, ResourceAvailabilityId resourceParentId,
+    ResourceAvailability(ResourceAvailabilityId id, ResourceId resourceId, ResourceId resourceParentId,
                          TimeSlot segment, Blockade blockade, int version) {
         this.id = id;
         this.resourceId = resourceId;
@@ -24,15 +24,15 @@ class ResourceAvailability {
     }
 
 
-    ResourceAvailability(ResourceAvailabilityId availabilityId, ResourceAvailabilityId resourceId, TimeSlot segment) {
+    ResourceAvailability(ResourceAvailabilityId availabilityId, ResourceId resourceId, TimeSlot segment) {
         this.id = availabilityId;
         this.resourceId = resourceId;
         this.segment = segment;
-        this.resourceParentId = ResourceAvailabilityId.none();
+        this.resourceParentId = ResourceId.none();
         this.blockade = Blockade.none();
     }
 
-    ResourceAvailability(ResourceAvailabilityId availabilityId, ResourceAvailabilityId resourceId, ResourceAvailabilityId resourceParentId, TimeSlot segment) {
+    ResourceAvailability(ResourceAvailabilityId availabilityId, ResourceId resourceId, ResourceId resourceParentId, TimeSlot segment) {
         this.id = availabilityId;
         this.resourceId = resourceId;
         this.segment = segment;
@@ -99,7 +99,7 @@ class ResourceAvailability {
         return segment;
     }
 
-    ResourceAvailabilityId resourceId() {
+    ResourceId resourceId() {
         return resourceId;
     }
 
@@ -116,7 +116,7 @@ class ResourceAvailability {
         return Objects.hash(id);
     }
 
-    public ResourceAvailabilityId resourceParentId() {
+    public ResourceId resourceParentId() {
         return resourceParentId;
     }
 }

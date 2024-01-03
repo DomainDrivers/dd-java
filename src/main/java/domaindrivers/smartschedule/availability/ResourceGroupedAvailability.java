@@ -5,8 +5,6 @@ import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static domaindrivers.smartschedule.availability.segment.SegmentInMinutes.defaultSegment;
 import static java.util.stream.Collectors.toList;
@@ -19,7 +17,7 @@ class ResourceGroupedAvailability {
         this.resourceAvailabilities = resourceAvailabilities;
     }
 
-    static ResourceGroupedAvailability of(ResourceAvailabilityId resourceId, TimeSlot timeslot) {
+    static ResourceGroupedAvailability of(ResourceId resourceId, TimeSlot timeslot) {
         List<ResourceAvailability> resourceAvailabilities = Segments
                 .split(timeslot, defaultSegment())
                 .stream()
@@ -28,7 +26,7 @@ class ResourceGroupedAvailability {
         return new ResourceGroupedAvailability(resourceAvailabilities);
     }
 
-    public static ResourceGroupedAvailability of(ResourceAvailabilityId resourceId, TimeSlot timeslot, ResourceAvailabilityId parentId) {
+    public static ResourceGroupedAvailability of(ResourceId resourceId, TimeSlot timeslot, ResourceId parentId) {
         List<ResourceAvailability> resourceAvailabilities = Segments
                 .split(timeslot, defaultSegment())
                 .stream()
@@ -68,14 +66,7 @@ class ResourceGroupedAvailability {
         return resourceAvailabilities;
     }
 
-    Set<Owner> owners() {
-        return resourceAvailabilities
-                .stream()
-                .map(ResourceAvailability::blockedBy)
-                .collect(Collectors.toSet());
-    }
-
-    Optional<ResourceAvailabilityId> resourceId() {
+    Optional<ResourceId> resourceId() {
         //resourceId are the same;
         return resourceAvailabilities
                 .stream()
