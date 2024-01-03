@@ -8,4 +8,8 @@ public record Owner(UUID owner) {
         return new Owner(null);
     }
 
+    static Owner newOne() {
+        return new Owner(UUID.randomUUID());
+    }
+
 }
