@@ -5,15 +5,18 @@ import domaindrivers.smartschedule.availability.segment.Segments;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;
 
+import java.util.Set;
 
 import static domaindrivers.smartschedule.availability.segment.SegmentInMinutes.defaultSegment;
 
 public class AvailabilityFacade {
 
     private final ResourceAvailabilityRepository availabilityRepository;
+    private final ResourceAvailabilityReadModel availabilityReadModel;
 
-    public AvailabilityFacade(ResourceAvailabilityRepository availabilityRepository) {
+    public AvailabilityFacade(ResourceAvailabilityRepository availabilityRepository, ResourceAvailabilityReadModel availabilityReadModel) {
         this.availabilityRepository = availabilityRepository;
+        this.availabilityReadModel = availabilityReadModel;
     }
 
     public void createResourceSlots(ResourceId resourceId, TimeSlot timeslot) {
@@ -63,6 +66,16 @@ public class AvailabilityFacade {
     public ResourceGroupedAvailability findGrouped(ResourceId resourceId, TimeSlot within) {
         TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
         return new ResourceGroupedAvailability(availabilityRepository.loadAllWithinSlot(resourceId, normalized));
+    }
+
+    Calendar loadCalendar(ResourceId resourceId, TimeSlot within) {
+        TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
+        return availabilityReadModel.load(resourceId, normalized);
+    }
+
+    Calendars loadCalendars(Set<ResourceId> resources, TimeSlot within) {
+        TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
+        return availabilityReadModel.loadAll(resources, normalized);
     }
 
     ResourceGroupedAvailability find(ResourceId resourceId, TimeSlot within) {

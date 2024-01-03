@@ -10,6 +10,6 @@ public class AvailabilityConfiguration {
 
     @Bean
     AvailabilityFacade availabilityFacade(JdbcTemplate jdbcTemplate) {
-        return new AvailabilityFacade(new ResourceAvailabilityRepository(jdbcTemplate));
+        return new AvailabilityFacade(new ResourceAvailabilityRepository(jdbcTemplate), new ResourceAvailabilityReadModel(jdbcTemplate));
     }
 }

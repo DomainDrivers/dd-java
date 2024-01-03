@@ -29,7 +29,9 @@ class AvailabilityFacadeTest {
         availabilityFacade.createResourceSlots(resourceId, oneDay);
 
         //then
-        assertEquals(96, availabilityFacade.find(resourceId, oneDay).size());
+        TimeSlot entireMonth = TimeSlot.createMonthlyTimeSlotAtUTC(2021, 1);
+        Calendar monthlyCalendar = availabilityFacade.loadCalendar(resourceId, entireMonth);
+        assertThat(monthlyCalendar).isEqualTo(Calendar.withAvailableSlots(resourceId, oneDay));
     }
 
     @Test
@@ -63,9 +65,10 @@ class AvailabilityFacadeTest {
 
         //then
         assertTrue(result);
-        ResourceGroupedAvailability resourceAvailabilities = availabilityFacade.find(resourceId, oneDay);
-        assertEquals(96, resourceAvailabilities.size());
-        assertThat(resourceAvailabilities.blockedEntirelyBy(owner)).isTrue();
+        TimeSlot entireMonth = TimeSlot.createMonthlyTimeSlotAtUTC(2021, 1);
+        Calendar monthlyCalendar = availabilityFacade.loadCalendar(resourceId, entireMonth);
+        assertThat(monthlyCalendar.availableSlots()).isEmpty();
+        assertThat(monthlyCalendar.takenBy(owner)).containsExactly(oneDay);
     }
 
     @Test
@@ -104,6 +107,7 @@ class AvailabilityFacadeTest {
         assertFalse(result);
         ResourceGroupedAvailability resourceAvailability = availabilityFacade.find(resourceId, oneDay);
         assertThat(resourceAvailability.blockedEntirelyBy(owner)).isTrue();
+
     }
 
 
@@ -171,11 +175,10 @@ class AvailabilityFacadeTest {
 
         //then
         assertTrue(result);
-        ResourceGroupedAvailability resourceAvailability = availabilityFacade.find(resourceId, oneDay);
-        assertThat(resourceAvailability.size()).isEqualTo(96);
-        assertThat(resourceAvailability.findBlockedBy(owner)).hasSize(95);
-        assertThat(resourceAvailability.findBlockedBy(newRequester)).hasSize(1);
-
+        Calendar dailyCalendar = availabilityFacade.loadCalendar(resourceId, oneDay);
+        assertThat(dailyCalendar.availableSlots()).isEmpty();
+        assertThat(dailyCalendar.takenBy(owner)).containsExactlyElementsOf(oneDay.leftoverAfterRemovingCommonWith(fifteenMinutes));
+        assertThat(dailyCalendar.takenBy(newRequester)).containsExactly(fifteenMinutes);
     }
 
 }
