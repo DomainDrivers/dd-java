@@ -26,11 +26,11 @@ class Project {
     }
 
     Optional<AllocatedCapability> remove(AllocatedCapability capability, TimeSlot forSlot) {
-        Optional<AllocatedCapability> toRemove = allocations.find(capability, forSlot);
+        Optional<AllocatedCapability> toRemove = allocations.find(capability.allocatedCapabilityID());
         if (toRemove.isEmpty()) {
             return Optional.empty();
         }
-        this.allocations = allocations.remove(capability, forSlot);
+        this.allocations = allocations.remove(capability.allocatedCapabilityID(), forSlot);
         return toRemove;
     }
 

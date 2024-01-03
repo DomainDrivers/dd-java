@@ -5,6 +5,7 @@ import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 record Allocations(Set<AllocatedCapability> all) {
@@ -19,12 +20,11 @@ record Allocations(Set<AllocatedCapability> all) {
         return new Allocations(all);
     }
 
-    Allocations remove(AllocatedCapability toRemove, TimeSlot slot) {
-        return find(toRemove, slot)
+    Allocations remove(UUID toRemove, TimeSlot slot) {
+        return find(toRemove)
                 .map(ar -> removeFromSlot(ar, slot))
                 .orElse(this);
     }
-
     private Allocations removeFromSlot(AllocatedCapability allocatedResource, TimeSlot slot) {
         Set<AllocatedCapability> leftOvers = allocatedResource
                 .timeSlot()
@@ -39,9 +39,9 @@ record Allocations(Set<AllocatedCapability> all) {
         return new Allocations(newSlots);
     }
 
-    Optional<AllocatedCapability> find(AllocatedCapability capability, TimeSlot timeSlot) {
+    Optional<AllocatedCapability> find(UUID allocatedCapabilityId) {
         return all.stream()
-                .filter(ar -> ar.equals(capability))
+                .filter(ar -> ar.allocatedCapabilityID().equals(allocatedCapabilityId))
                 .findFirst();
     }
 
