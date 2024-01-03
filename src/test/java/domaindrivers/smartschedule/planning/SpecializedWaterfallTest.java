@@ -1,12 +1,12 @@
 package domaindrivers.smartschedule.planning;
 
+import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.allocation.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
 import domaindrivers.smartschedule.shared.ResourceName;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

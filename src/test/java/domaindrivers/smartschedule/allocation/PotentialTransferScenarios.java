@@ -5,10 +5,9 @@ import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import domaindrivers.smartschedule.simulation.*;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static domaindrivers.smartschedule.shared.capability.Capability.skill;
 import static java.math.BigDecimal.valueOf;
@@ -22,26 +21,24 @@ class PotentialTransferScenarios {
     static final Demands DEMAND_FOR_JAVA_MID_IN_JAN = new Demands(List.of(new Demand(skill("JAVA-MID"), JAN_1)));
     static final Demands DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN = new Demands(List.of(new Demand(skill("JAVA-MID"), JAN_1), new Demand(skill("PYTHON-MID"), JAN_1)));
 
-    static final UUID BANKING_SOFT_ID = UUID.randomUUID();
-    static final UUID INSURANCE_SOFT_ID = UUID.randomUUID();
+    static final ProjectAllocationsId BANKING_SOFT_ID = ProjectAllocationsId.newOne();
+    static final ProjectAllocationsId INSURANCE_SOFT_ID = ProjectAllocationsId.newOne();
     static final AllocatedCapability STASZEK_JAVA_MID = new AllocatedCapability(UUID.randomUUID(), skill("JAVA-MID"), JAN_1);
 
-    AllocationFacade simulationFacade = new AllocationFacade(new SimulationFacade(new OptimizationFacade()));
+    PotentialTransfersService potentialTransfers = new PotentialTransfersService(new SimulationFacade(new OptimizationFacade()));
 
     @Test
     void simulatesMovingCapabilitiesToDifferentProject() {
         //given
         Project bankingSoft =
-                new Project(DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
+                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
         Project insuranceSoft =
-                new Project(DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(90));
-        Projects projects = new Projects(
-                Map.of(BANKING_SOFT_ID, bankingSoft, INSURANCE_SOFT_ID, insuranceSoft));
-        //and
+                new Project(INSURANCE_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(90));
         bankingSoft.add(STASZEK_JAVA_MID);
+        PotentialTransfers projects = toPotentialTransfers(bankingSoft, insuranceSoft);
 
         //when
-        Double result = simulationFacade.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, JAN_1);
+        Double result = potentialTransfers.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, JAN_1);
 
         //then
         assertEquals(81d, result);
@@ -51,16 +48,14 @@ class PotentialTransferScenarios {
     void simulatesMovingCapabilitiesToDifferentProjectJustForAWhile() {
         //given
         Project bankingSoft =
-                new Project(DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
+                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
         Project insuranceSoft =
-                new Project(DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, valueOf(99));
-        Projects projects = new Projects(
-                Map.of(BANKING_SOFT_ID, bankingSoft, INSURANCE_SOFT_ID, insuranceSoft));
-        //and
+                new Project(INSURANCE_SOFT_ID, DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, valueOf(99));
         bankingSoft.add(STASZEK_JAVA_MID);
+        PotentialTransfers projects = toPotentialTransfers(bankingSoft, insuranceSoft);
 
         //when
-        Double result = simulationFacade.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, FIFTEEN_MINUTES_IN_JAN);
+        Double result = potentialTransfers.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, FIFTEEN_MINUTES_IN_JAN);
 
         //then
         assertEquals(90d, result);
@@ -70,19 +65,50 @@ class PotentialTransferScenarios {
     void theMoveGivesZeroProfitWhenThereAreStillMissingDemands() {
         //given
         Project bankingSoft =
-                new Project(DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
+                new Project(BANKING_SOFT_ID, DEMAND_FOR_JAVA_MID_IN_JAN, valueOf(9));
         Project insuranceSoft =
-                new Project(DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, valueOf(99));
-        Projects projects = new Projects(
-                Map.of(BANKING_SOFT_ID, bankingSoft, INSURANCE_SOFT_ID, insuranceSoft));
-        //and
+                new Project(INSURANCE_SOFT_ID, DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, valueOf(99));
         bankingSoft.add(STASZEK_JAVA_MID);
+        PotentialTransfers projects = toPotentialTransfers(bankingSoft, insuranceSoft);
 
         //when
-        Double result = simulationFacade.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, JAN_1);
+        Double result = potentialTransfers.checkPotentialTransfer(projects, BANKING_SOFT_ID, INSURANCE_SOFT_ID, STASZEK_JAVA_MID, JAN_1);
 
         //then
         assertEquals(-9d, result);
+    }
+
+    PotentialTransfers toPotentialTransfers(Project... projects) {
+        Map<ProjectAllocationsId, Allocations> allocations = new HashMap<>();
+        Map<ProjectAllocationsId, Demands> demands = new HashMap<>();
+        Map<ProjectAllocationsId, BigDecimal> earnings = new HashMap<>();
+        for (Project project : projects) {
+            allocations.put(project.id, project.allocations);
+            demands.put(project.id, project.demands);
+            earnings.put(project.id, project.earnings);
+        }
+        return new PotentialTransfers(new ProjectsAllocationsSummary(Map.of(), allocations, demands), earnings);
+    }
+
+}
+
+class Project {
+
+    ProjectAllocationsId id;
+    BigDecimal earnings;
+    Demands demands;
+    Allocations allocations;
+
+    Project(ProjectAllocationsId id, Demands demands, BigDecimal earnings) {
+        this.id = id;
+        this.demands = demands;
+        this.earnings = earnings;
+        this.allocations = Allocations.none();
+    }
+
+    Allocations add(AllocatedCapability allocatedCapability) {
+        this.allocations = allocations.add(allocatedCapability);
+        return allocations;
     }
 
 }

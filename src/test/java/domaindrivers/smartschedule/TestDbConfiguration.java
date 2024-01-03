@@ -1,4 +1,4 @@
-package domaindrivers.smartschedule.planning;
+package domaindrivers.smartschedule;
 
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.context.TestConfiguration;

@@ -2,6 +2,8 @@ package domaindrivers.smartschedule.shared.capability;
 
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.stream.Stream;
 
 public record Capability(String name, String type) implements Serializable {
 
@@ -17,4 +19,7 @@ public record Capability(String name, String type) implements Serializable {
         return new Capability(asset, "ASSET");
     }
 
+    public static List<Capability> skills(String ... skills) {
+        return Stream.of(skills).map(Capability::skill).toList();
+    }
 }

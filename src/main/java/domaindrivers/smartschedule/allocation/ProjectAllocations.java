@@ -86,6 +86,10 @@ class ProjectAllocations {
         return demands.missingDemands(allocations);
     }
 
+    Demands demands() {
+        return demands;
+    }
+
     Allocations allocations() {
         return allocations;
     }
@@ -104,6 +108,12 @@ class ProjectAllocations {
         return Optional.of(new ProjectAllocationsDemandsScheduled(projectId, missingDemands(), when));
     }
 
+    ProjectAllocationsId id() {
+        return projectId;
+    }
 
+    TimeSlot timeSlot() {
+        return timeSlot;
+    }
 }
 

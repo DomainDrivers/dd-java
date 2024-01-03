@@ -1,6 +1,7 @@
 package domaindrivers.smartschedule.planning;
 
 import domaindrivers.smartschedule.SmartScheduleApplication;
+import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.shared.ResourceName;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
