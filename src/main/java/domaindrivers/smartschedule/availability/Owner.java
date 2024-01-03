@@ -12,4 +12,11 @@ public record Owner(UUID owner) {
         return new Owner(UUID.randomUUID());
     }
 
+    public boolean byNone() {
+        return none().equals(this);
+    }
+
+    public UUID id() {
+        return owner;
+    }
 }
