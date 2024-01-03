@@ -42,12 +42,12 @@ public record Stage(String stageName, Set<Stage> dependencies, Set<ResourceName>
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Stage stage = (Stage) o;
-        return Objects.equals(stageName, stage.stageName);
+        return Objects.equals(stageName, stage.stageName) && Objects.equals(dependencies, stage.dependencies) && Objects.equals(resources, stage.resources) && Objects.equals(duration, stage.duration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(stageName);
+        return Objects.hash(stageName, dependencies, resources, duration);
     }
 }
 

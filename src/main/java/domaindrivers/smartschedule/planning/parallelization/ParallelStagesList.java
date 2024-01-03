@@ -9,6 +9,9 @@ import static java.util.Comparator.comparing;
 
 public record ParallelStagesList(List<ParallelStages> all) {
 
+    public static ParallelStagesList empty() {
+        return new ParallelStagesList(List.of());
+    }
 
     public static ParallelStagesList of(ParallelStages ... stages) {
         return new ParallelStagesList(List.of(stages));
