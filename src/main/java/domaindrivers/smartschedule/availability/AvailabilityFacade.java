@@ -77,7 +77,7 @@ public class AvailabilityFacade {
         return new ResourceGroupedAvailability(availabilityRepository.loadAllWithinSlot(resourceId, normalized));
     }
 
-    Calendar loadCalendar(ResourceId resourceId, TimeSlot within) {
+    public Calendar loadCalendar(ResourceId resourceId, TimeSlot within) {
         TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
         return availabilityReadModel.load(resourceId, normalized);
     }
