@@ -1,6 +1,7 @@
 package domaindrivers.smartschedule.allocation.capabilityscheduling;
 
 
+import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import io.hypersistence.utils.hibernate.type.json.JsonType;

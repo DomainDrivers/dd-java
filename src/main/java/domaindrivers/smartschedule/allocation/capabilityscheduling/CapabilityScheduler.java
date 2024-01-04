@@ -1,6 +1,7 @@
 package domaindrivers.smartschedule.allocation.capabilityscheduling;
 
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
+import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;

@@ -1,4 +1,4 @@
-package domaindrivers.smartschedule.allocation.capabilityscheduling;
+package domaindrivers.smartschedule.shared;
 
 
 
@@ -7,14 +7,14 @@ import domaindrivers.smartschedule.shared.capability.Capability;
 import java.io.Serializable;
 import java.util.*;
 
-record CapabilitySelector(Set<Capability> capabilities, SelectingPolicy selectingPolicy) implements Serializable {
+public record CapabilitySelector(Set<Capability> capabilities, SelectingPolicy selectingPolicy) implements Serializable {
 
 
-    enum SelectingPolicy {
+    public enum SelectingPolicy {
         ALL_SIMULTANEOUSLY, ONE_OF_ALL
     }
 
-    static CapabilitySelector canPerformAllAtTheTime(Set<Capability> capabilities) {
+    public static CapabilitySelector canPerformAllAtTheTime(Set<Capability> capabilities) {
         return new CapabilitySelector(capabilities, SelectingPolicy.ALL_SIMULTANEOUSLY);
     }
 
@@ -30,7 +30,7 @@ record CapabilitySelector(Set<Capability> capabilities, SelectingPolicy selectin
         return capabilities.contains(capability);
     }
 
-    boolean canPerform(Set<Capability> capabilities) {
+    public boolean canPerform(Set<Capability> capabilities) {
         if (capabilities.size() == 1) {
             return new HashSet<>(this.capabilities).containsAll(capabilities);
         }

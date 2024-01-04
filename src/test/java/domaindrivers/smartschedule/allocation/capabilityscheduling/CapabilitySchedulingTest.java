@@ -3,6 +3,7 @@ package domaindrivers.smartschedule.allocation.capabilityscheduling;
 import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.availability.Calendar;
+import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;

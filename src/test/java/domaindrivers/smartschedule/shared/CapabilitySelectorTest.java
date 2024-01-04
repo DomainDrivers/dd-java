@@ -1,4 +1,4 @@
-package domaindrivers.smartschedule.allocation.capabilityscheduling;
+package domaindrivers.smartschedule.shared;
 
 import domaindrivers.smartschedule.shared.capability.Capability;
 import org.junit.jupiter.api.Test;

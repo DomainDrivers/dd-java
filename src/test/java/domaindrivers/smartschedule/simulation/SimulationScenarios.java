@@ -174,6 +174,35 @@ class SimulationScenarios {
         assertEquals(37d, buyingStaszek); //we pay 3 and get the project for 40
     }
 
+    @Test
+    void takesIntoAccountSimulationsCapabilities() {
+        //given
+        List<SimulatedProject> simulatedProjects = simulatedProjects()
+                .withProject(PROJECT_1)
+                .thatRequires(demandFor(skill("JAVA-MID"), JAN_1))
+                .thatCanEarn(valueOf(9))
+                .withProject(PROJECT_2)
+                .thatRequires(demandFor(skill("JAVA-MID"), JAN_1))
+                .thatRequires(demandFor(skill("PYTHON"), JAN_1))
+                .thatCanEarn(valueOf(99))
+                .build();
+
+        //and there are
+        SimulatedCapabilities simulatedAvailability = simulatedCapabilities()
+                .withEmployee(STASZEK)
+                .thatBringsSimultaneously(skill("JAVA-MID"), skill("PYTHON"))
+                .thatIsAvailableAt(JAN_1)
+                .build();
+
+
+        //when
+        Result result = simulationFacade.whatIsTheOptimalSetup(simulatedProjects, simulatedAvailability);
+
+        //then
+        assertEquals(99d, result.profit());
+        assertEquals(1, result.chosenItems().size());
+    }
+
     SimulatedProjectsBuilder simulatedProjects() {
         return new SimulatedProjectsBuilder();
     }
