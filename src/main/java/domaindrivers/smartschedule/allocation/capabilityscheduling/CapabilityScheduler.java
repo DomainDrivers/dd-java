@@ -19,7 +19,7 @@ public class CapabilityScheduler {
     }
 
     @Transactional
-    public List<AllocatableCapabilityId> scheduleResourceCapabilitiesForPeriod(AllocatableResourceId resourceId, List<Capability> capabilities, TimeSlot timeSlot) {
+    public List<AllocatableCapabilityId> scheduleResourceCapabilitiesForPeriod(AllocatableResourceId resourceId, List<CapabilitySelector> capabilities, TimeSlot timeSlot) {
         List<AllocatableCapabilityId> allocatableResourceIds = createAllocatableResources(resourceId, capabilities, timeSlot);
         allocatableResourceIds.forEach(resource ->
                 availabilityFacade.createResourceSlots(resource.toAvailabilityResourceId(), timeSlot));
@@ -31,7 +31,7 @@ public class CapabilityScheduler {
         List<AllocatableCapability> allocatableCapability =
                 resources
                         .stream()
-                        .map(resource -> new AllocatableCapability(resource, capability, timeSlot)).toList();
+                        .map(resource -> new AllocatableCapability(resource, CapabilitySelector.canJustPerform(capability), timeSlot)).toList();
         allocatableResourceRepository.saveAll(allocatableCapability);
         allocatableCapability.forEach(
                 resource -> availabilityFacade.createResourceSlots(resource.id().toAvailabilityResourceId(), timeSlot));
@@ -41,7 +41,7 @@ public class CapabilityScheduler {
                 .toList();
     }
 
-    private List<AllocatableCapabilityId> createAllocatableResources(AllocatableResourceId resourceId, List<Capability> capabilities, TimeSlot timeSlot) {
+    private List<AllocatableCapabilityId> createAllocatableResources(AllocatableResourceId resourceId, List<CapabilitySelector> capabilities, TimeSlot timeSlot) {
         List<AllocatableCapability> allocatableResources = capabilities
                 .stream()
                 .map(capability -> new AllocatableCapability(resourceId, capability, timeSlot))
@@ -51,5 +51,22 @@ public class CapabilityScheduler {
                 .stream()
                 .map(AllocatableCapability::id)
                 .toList();
+    }
+
+    public AllocatableCapabilityId findResourceCapabilities(AllocatableResourceId resourceId, Capability capability, TimeSlot period) {
+        return allocatableResourceRepository
+                .findByResourceIdAndCapabilityAndTimeSlot(resourceId.id(), capability.name(), capability.type(), period.from(), period.to())
+                .map(AllocatableCapability::id)
+                .orElse(null);
+    }
+
+    AllocatableCapabilityId findResourceCapabilities(AllocatableResourceId allocatableResourceId, Set<Capability> capabilities, TimeSlot timeSlot) {
+        return allocatableResourceRepository
+                .findByResourceIdAndTimeSlot(allocatableResourceId.id(), timeSlot.from(), timeSlot.to())
+                .stream()
+                .filter(ac -> ac.canPerform(capabilities))
+                .map(AllocatableCapability::id)
+                .findFirst()
+                .orElse(null);
     }
 }

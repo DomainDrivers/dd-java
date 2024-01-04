@@ -53,7 +53,7 @@ public class CapabilityFinder {
     private AllocatableCapabilitiesSummary createSummary(List<AllocatableCapability> from) {
         return new AllocatableCapabilitiesSummary(
                 from.stream()
-                        .map(allocatableCapability -> new AllocatableCapabilitySummary(allocatableCapability.id(), allocatableCapability.resourceId(), allocatableCapability.capability(), allocatableCapability.slot()))
+                        .map(allocatableCapability -> new AllocatableCapabilitySummary(allocatableCapability.id(), allocatableCapability.resourceId(), allocatableCapability.capabilities(), allocatableCapability.slot()))
                         .collect(toList()));
     }
 

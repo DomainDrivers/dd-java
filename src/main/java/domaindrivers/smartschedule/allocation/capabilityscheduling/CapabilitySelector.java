@@ -22,6 +22,10 @@ record CapabilitySelector(Set<Capability> capabilities, SelectingPolicy selectin
         return new CapabilitySelector(capabilities, SelectingPolicy.ONE_OF_ALL);
     }
 
+    public static CapabilitySelector canJustPerform(Capability capability) {
+        return new CapabilitySelector(Set.of(capability), SelectingPolicy.ONE_OF_ALL);
+    }
+
     boolean canPerform(Capability capability) {
         return capabilities.contains(capability);
     }

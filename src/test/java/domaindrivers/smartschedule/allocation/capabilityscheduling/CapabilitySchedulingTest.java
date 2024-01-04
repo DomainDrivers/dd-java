@@ -34,8 +34,8 @@ class CapabilitySchedulingTest {
     @Test
     void canScheduleAllocatableCapabilities() {
         //given
-        Capability javaSkill = Capability.skill("JAVA");
-        Capability rustSkill = Capability.skill("RUST");
+        CapabilitySelector javaSkill = CapabilitySelector.canJustPerform(Capability.skill("JAVA"));
+        CapabilitySelector rustSkill = CapabilitySelector.canJustPerform(Capability.skill("RUST"));
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
 
         //when
@@ -57,34 +57,36 @@ class CapabilitySchedulingTest {
     @Test
     void capabilityIsFoundWhenCapabilityPresentInTimeSlot() {
         //given
-        Capability uniqueSkill = Capability.permission("FITNESS-CLASS");
+        Capability fitnessClass = Capability.permission("FITNESS-CLASS");
+        CapabilitySelector uniqueSkill = CapabilitySelector.canJustPerform(fitnessClass);
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         TimeSlot anotherDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 2);
         //and
         capabilityScheduler.scheduleResourceCapabilitiesForPeriod(AllocatableResourceId.newOne(), List.of(uniqueSkill), oneDay);
 
         //when
-        AllocatableCapabilitiesSummary found = capabilityFinder.findAvailableCapabilities(uniqueSkill, oneDay);
-        AllocatableCapabilitiesSummary notFound = capabilityFinder.findAvailableCapabilities(uniqueSkill, anotherDay);
+        AllocatableCapabilitiesSummary found = capabilityFinder.findAvailableCapabilities(fitnessClass, oneDay);
+        AllocatableCapabilitiesSummary notFound = capabilityFinder.findAvailableCapabilities(fitnessClass, anotherDay);
 
         //then
         assertThat(found.all()).hasSize(1);
         assertThat(notFound.all()).isEmpty();
-        assertEquals(found.all().get(0).capability(), uniqueSkill);
+        assertEquals(found.all().get(0).capabilities(), uniqueSkill);
         assertEquals(found.all().get(0).timeSlot(), oneDay);
     }
 
     @Test
     void capabilityNotFoundWhenCapabilityNotPresent() {
         //given
-        Capability admin = Capability.permission("ADMIN");
+        CapabilitySelector admin = CapabilitySelector.canJustPerform(Capability.permission("ADMIN"));
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         //and
         capabilityScheduler.scheduleResourceCapabilitiesForPeriod(AllocatableResourceId.newOne(), List.of(admin), oneDay);
 
         //when
-        Capability rust = Capability.skill("RUST JUST FOR NINJAS");
-        AllocatableCapabilitiesSummary found = capabilityFinder.findCapabilities(rust, oneDay);
+        Capability rustSkill = Capability.skill("RUST JUST FOR NINJAS");
+        CapabilitySelector rust = CapabilitySelector.canJustPerform(rustSkill);
+        AllocatableCapabilitiesSummary found = capabilityFinder.findCapabilities(rustSkill, oneDay);
 
         //then
         assertThat(found.all()).isEmpty();
@@ -111,7 +113,8 @@ class CapabilitySchedulingTest {
     @Test
     void canFindCapabilityIgnoringAvailability() {
         //given
-        Capability admin = Capability.permission("REALLY_UNIQUE_ADMIN");
+        Capability adminPermission = Capability.permission("REALLY_UNIQUE_ADMIN");
+        CapabilitySelector admin = CapabilitySelector.canJustPerform(adminPermission);
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(1111, 1, 1);
         TimeSlot differentDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 2, 1);
         TimeSlot hourWithinDay = new TimeSlot(oneDay.from(), oneDay.from().plusSeconds(3600));
@@ -120,16 +123,41 @@ class CapabilitySchedulingTest {
         capabilityScheduler.scheduleResourceCapabilitiesForPeriod(AllocatableResourceId.newOne(), List.of(admin), oneDay);
 
         //when
-        AllocatableCapabilitiesSummary onTheExactDay = capabilityFinder.findCapabilities(admin, oneDay);
-        AllocatableCapabilitiesSummary onDifferentDay = capabilityFinder.findCapabilities(admin, differentDay);
-        AllocatableCapabilitiesSummary inSlotWithin = capabilityFinder.findCapabilities(admin, hourWithinDay);
-        AllocatableCapabilitiesSummary inOverlappingSlot = capabilityFinder.findCapabilities(admin, partiallyOverlappingDay);
+        AllocatableCapabilitiesSummary onTheExactDay = capabilityFinder.findCapabilities(adminPermission, oneDay);
+        AllocatableCapabilitiesSummary onDifferentDay = capabilityFinder.findCapabilities(adminPermission, differentDay);
+        AllocatableCapabilitiesSummary inSlotWithin = capabilityFinder.findCapabilities(adminPermission, hourWithinDay);
+        AllocatableCapabilitiesSummary inOverlappingSlot = capabilityFinder.findCapabilities(adminPermission, partiallyOverlappingDay);
 
         //then
         assertThat(onTheExactDay.all()).hasSize(1);
         assertThat(inSlotWithin.all()).hasSize(1);
         assertThat(onDifferentDay.all()).isEmpty();
         assertThat(inOverlappingSlot.all()).isEmpty();
+    }
+
+
+
+    @Test
+    void findingTakesIntoAccountSimulationsCapabilities() {
+        //given
+        Set<Capability> truckAssets = Set.of(Capability.asset("LOADING"), Capability.asset("CARRYING"));
+        CapabilitySelector truckCapabilities = CapabilitySelector.canPerformAllAtTheTime(truckAssets);
+        TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(1111, 1, 1);
+        //and
+        AllocatableResourceId truckResourceId = AllocatableResourceId.newOne();
+        capabilityScheduler.scheduleResourceCapabilitiesForPeriod(truckResourceId, List.of(truckCapabilities), oneDay);
+
+        //when
+        AllocatableCapabilityId canPerformBoth = capabilityScheduler.findResourceCapabilities(truckResourceId, truckAssets, oneDay);
+        AllocatableCapabilityId canPerformJustLoading = capabilityScheduler.findResourceCapabilities(truckResourceId, Capability.asset("CARRYING"), oneDay);
+        AllocatableCapabilityId canPerformJustCarrying = capabilityScheduler.findResourceCapabilities(truckResourceId, Capability.asset("LOADING"), oneDay);
+        AllocatableCapabilityId cantPerformJava = capabilityScheduler.findResourceCapabilities(truckResourceId, Capability.skill("JAVA"), oneDay);
+
+        //then
+        assertThat(canPerformBoth).isNotNull();
+        assertThat(canPerformJustLoading).isNotNull();
+        assertThat(canPerformJustCarrying).isNotNull();
+        assertThat(cantPerformJava).isNull();
     }
 
 }

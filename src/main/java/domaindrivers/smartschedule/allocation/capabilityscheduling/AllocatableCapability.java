@@ -7,6 +7,8 @@ import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 
+import java.util.Set;
+
 
 @Entity(name = "allocatable_capabilities")
 class AllocatableCapability {
@@ -16,7 +18,7 @@ class AllocatableCapability {
 
     @Type(JsonType.class)
     @Column(columnDefinition = "jsonb")
-    private Capability capability;
+    private CapabilitySelector possibleCapabilities;
 
     @Embedded
     private AllocatableResourceId resourceId;
@@ -28,9 +30,9 @@ class AllocatableCapability {
     })
     private TimeSlot timeSlot;
 
-    AllocatableCapability(AllocatableResourceId resourceId, Capability capability, TimeSlot timeSlot) {
+    AllocatableCapability(AllocatableResourceId resourceId, CapabilitySelector possibleCapabilities, TimeSlot timeSlot) {
         this.resourceId = resourceId;
-        this.capability = capability;
+        this.possibleCapabilities = possibleCapabilities;
         this.timeSlot = timeSlot;
     }
 
@@ -41,9 +43,8 @@ class AllocatableCapability {
         return id;
     }
 
-
-    public boolean canPerform(Capability capability) {
-        return capability.equals(capability);
+    boolean canPerform(Set<Capability> capabilities) {
+        return capabilities().canPerform(capabilities);
     }
 
     AllocatableResourceId resourceId() {
@@ -54,7 +55,7 @@ class AllocatableCapability {
         return timeSlot;
     }
 
-    Capability capability() {
-        return capability;
+    CapabilitySelector capabilities() {
+        return possibleCapabilities;
     }
 }
