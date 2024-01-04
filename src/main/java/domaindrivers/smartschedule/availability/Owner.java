@@ -8,8 +8,12 @@ public record Owner(UUID owner) {
         return new Owner(null);
     }
 
-    static Owner newOne() {
+    public static Owner newOne() {
         return new Owner(UUID.randomUUID());
+    }
+
+    public static Owner of(UUID id) {
+        return new Owner(id);
     }
 
     public boolean byNone() {

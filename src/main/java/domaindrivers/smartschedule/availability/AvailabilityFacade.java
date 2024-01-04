@@ -36,6 +36,9 @@ public class AvailabilityFacade {
     }
 
     private boolean block(Owner requester, ResourceGroupedAvailability toBlock) {
+        if (toBlock.hasNoSlots()) {
+            return false;
+        }
         boolean result = toBlock.block(requester);
         if (result) {
             return availabilityRepository.saveCheckingVersion(toBlock);
@@ -46,6 +49,9 @@ public class AvailabilityFacade {
     @Transactional
     public boolean release(ResourceId resourceId, TimeSlot timeSlot, Owner requester) {
         ResourceGroupedAvailability toRelease = findGrouped(resourceId, timeSlot);
+        if (toRelease.hasNoSlots()) {
+            return false;
+        }
         boolean result = toRelease.release(requester);
         if (result) {
             return availabilityRepository.saveCheckingVersion(toRelease);
@@ -56,6 +62,9 @@ public class AvailabilityFacade {
     @Transactional
     public boolean disable(ResourceId resourceId, TimeSlot timeSlot, Owner requester) {
         ResourceGroupedAvailability toDisable = findGrouped(resourceId, timeSlot);
+        if (toDisable.hasNoSlots()) {
+            return false;
+        }
         boolean result = toDisable.disable(requester);
         if (result) {
             result = availabilityRepository.saveCheckingVersion(toDisable);

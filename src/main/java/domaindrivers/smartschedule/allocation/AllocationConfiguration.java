@@ -13,8 +13,9 @@ class AllocationConfiguration {
     @Bean
     AllocationFacade allocationFacade(
             ProjectAllocationsRepository projectAllocationsRepository,
+            AvailabilityFacade availabilityFacade,
             Clock clock) {
-        return new AllocationFacade(projectAllocationsRepository, clock);
+        return new AllocationFacade(projectAllocationsRepository, availabilityFacade, clock);
     }
 
 

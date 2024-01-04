@@ -1,5 +1,7 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.availability.AvailabilityFacade;
+import domaindrivers.smartschedule.availability.Owner;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
@@ -15,10 +17,12 @@ import java.util.UUID;
 public class AllocationFacade {
 
     private final ProjectAllocationsRepository projectAllocationsRepository;
+    private final AvailabilityFacade availabilityFacade;
     private final Clock clock;
 
-    public AllocationFacade(ProjectAllocationsRepository projectAllocationsRepository, Clock clock) {
+    public AllocationFacade(ProjectAllocationsRepository projectAllocationsRepository, AvailabilityFacade availabilityFacade, Clock clock) {
         this.projectAllocationsRepository = projectAllocationsRepository;
+        this.availabilityFacade = availabilityFacade;
         this.clock = clock;
     }
 
@@ -40,15 +44,16 @@ public class AllocationFacade {
 
     @Transactional
     public Optional<UUID> allocateToProject(ProjectAllocationsId projectId, ResourceId resourceId, Capability capability, TimeSlot timeSlot) {
+        //TODO WHAT TO DO WITH AVAILABILITY HERE? - implement
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
         Optional<CapabilitiesAllocated> event = allocations.allocate(resourceId, capability, timeSlot, Instant.now(clock));
         projectAllocationsRepository.save(allocations);
         return event.map(CapabilitiesAllocated::allocatedCapabilityId);
-
     }
 
     @Transactional
     public boolean releaseFromProject(ProjectAllocationsId projectId, UUID allocatableCapabilityId, TimeSlot timeSlot) {
+        //TODO WHAT TO DO WITH AVAILABILITY HERE? - just think about it, don't implement
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
         Optional<CapabilityReleased> event = allocations.release(allocatableCapabilityId, timeSlot, Instant.now(clock));
         projectAllocationsRepository.save(allocations);
