@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.availability;
 
+import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
 import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.shared.ClockConfiguration;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
@@ -13,7 +14,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = {TestDbConfiguration.class, AvailabilityConfiguration.class})
+@SpringBootTest(classes = {TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
 @Sql(scripts = "classpath:schema-availability.sql")
 public class AvailabilityCalendarTest {
 

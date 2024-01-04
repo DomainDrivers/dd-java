@@ -2,7 +2,8 @@ package domaindrivers.smartschedule.shared;
 
 
 public interface EventsPublisher {
-    void publishAfterCommit(Event event);
+    //remember about transactions scope
+    void publish(Event event);
 }
 
 

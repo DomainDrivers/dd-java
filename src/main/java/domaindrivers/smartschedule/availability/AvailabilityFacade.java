@@ -2,9 +2,12 @@ package domaindrivers.smartschedule.availability;
 
 
 import domaindrivers.smartschedule.availability.segment.Segments;
+import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 
@@ -14,10 +17,14 @@ public class AvailabilityFacade {
 
     private final ResourceAvailabilityRepository availabilityRepository;
     private final ResourceAvailabilityReadModel availabilityReadModel;
+    private final EventsPublisher eventsPublisher;
+    private final Clock clock;
 
-    public AvailabilityFacade(ResourceAvailabilityRepository availabilityRepository, ResourceAvailabilityReadModel availabilityReadModel) {
+    public AvailabilityFacade(ResourceAvailabilityRepository availabilityRepository, ResourceAvailabilityReadModel availabilityReadModel, EventsPublisher eventsPublisher, Clock clock) {
         this.availabilityRepository = availabilityRepository;
         this.availabilityReadModel = availabilityReadModel;
+        this.eventsPublisher = eventsPublisher;
+        this.clock = clock;
     }
 
     public void createResourceSlots(ResourceId resourceId, TimeSlot timeslot) {
@@ -66,9 +73,13 @@ public class AvailabilityFacade {
         if (toDisable.hasNoSlots()) {
             return false;
         }
+        Set<Owner> previousOwners = toDisable.owners();
         boolean result = toDisable.disable(requester);
         if (result) {
             result = availabilityRepository.saveCheckingVersion(toDisable);
+            if (result) {
+                eventsPublisher.publish(new ResourceTakenOver(resourceId, previousOwners, timeSlot, Instant.now(clock)));
+            }
         }
         return result;
     }

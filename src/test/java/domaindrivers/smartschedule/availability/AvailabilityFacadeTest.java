@@ -1,23 +1,31 @@
 package domaindrivers.smartschedule.availability;
 
+import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
 import domaindrivers.smartschedule.TestDbConfiguration;
+import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = {TestDbConfiguration.class, AvailabilityConfiguration.class})
+@SpringBootTest(classes = {TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
 @Sql(scripts = "classpath:schema-availability.sql")
 class AvailabilityFacadeTest {
 
     @Autowired
     AvailabilityFacade availabilityFacade;
+
+    @Autowired
+    EventsPublisher eventsPublisher;
 
     @Test
     void canCreateAvailabilitySlots() {
@@ -221,6 +229,34 @@ class AvailabilityFacadeTest {
         assertThat(dailyCalendar.availableSlots()).isEmpty();
         assertThat(dailyCalendar.takenBy(owner)).containsExactlyElementsOf(oneDay.leftoverAfterRemovingCommonWith(fifteenMinutes));
         assertThat(dailyCalendar.takenBy(newRequester)).containsExactly(fifteenMinutes);
+    }
+
+    @Test
+    void resourceTakenOverEventIsEmittedAfterTakingOverTheResource() {
+        //given
+        ResourceId resourceId = ResourceId.newOne();
+        TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
+        Owner initialOwner = Owner.newOne();
+        Owner newOwner = Owner.newOne();
+        availabilityFacade.createResourceSlots(resourceId, oneDay);
+        availabilityFacade.block(resourceId, oneDay, initialOwner);
+
+        //when
+        boolean result = availabilityFacade.disable(resourceId, oneDay, newOwner);
+
+        //then
+        assertTrue(result);
+        Mockito.verify(eventsPublisher)
+                .publish(Mockito.argThat(takenOver(resourceId, initialOwner, oneDay)));
+    }
+
+    ArgumentMatcher<ResourceTakenOver> takenOver(ResourceId resourceId, Owner initialOwner, TimeSlot oneDay) {
+        return event ->
+                event.resourceId().equals(resourceId) &&
+                        event.slot().equals(oneDay) &&
+                        event.previousOwners().equals(Set.of(initialOwner)) &&
+                        event.occurredAt() != null &&
+                        event.eventId() != null;
     }
 
 }

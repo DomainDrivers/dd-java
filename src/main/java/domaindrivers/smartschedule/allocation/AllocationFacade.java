@@ -7,6 +7,7 @@ import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityFin
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.availability.Owner;
 import domaindrivers.smartschedule.availability.ResourceId;
+import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;
@@ -24,12 +25,14 @@ public class AllocationFacade {
     private final ProjectAllocationsRepository projectAllocationsRepository;
     private final AvailabilityFacade availabilityFacade;
     private final CapabilityFinder capabilityFinder;
+    private final EventsPublisher eventsPublisher;
     private final Clock clock;
 
-    public AllocationFacade(ProjectAllocationsRepository projectAllocationsRepository, AvailabilityFacade availabilityFacade, CapabilityFinder capabilityFinder, Clock clock) {
+    public AllocationFacade(ProjectAllocationsRepository projectAllocationsRepository, AvailabilityFacade availabilityFacade, CapabilityFinder capabilityFinder, EventsPublisher eventsPublisher, Clock clock) {
         this.projectAllocationsRepository = projectAllocationsRepository;
         this.availabilityFacade = availabilityFacade;
         this.capabilityFinder = capabilityFinder;
+        this.eventsPublisher = eventsPublisher;
         this.clock = clock;
     }
 
@@ -38,6 +41,7 @@ public class AllocationFacade {
         ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
         ProjectAllocations projectAllocations = new ProjectAllocations(projectId, Allocations.none(), scheduledDemands, timeSlot);
         projectAllocationsRepository.save(projectAllocations);
+        eventsPublisher.publish(new ProjectAllocationScheduled(projectId, timeSlot, Instant.now(clock)));
         return projectId;
     }
 
@@ -111,6 +115,7 @@ public class AllocationFacade {
     public void editProjectDates(ProjectAllocationsId projectId, TimeSlot fromTo) {
         ProjectAllocations projectAllocations = projectAllocationsRepository.findById(projectId).orElseThrow();
         projectAllocations.defineSlot(fromTo, clock.instant());
+        eventsPublisher.publish(new ProjectAllocationScheduled(projectId, fromTo, Instant.now(clock)));
     }
 
     @Transactional
@@ -118,7 +123,10 @@ public class AllocationFacade {
         ProjectAllocations projectAllocations =
                 projectAllocationsRepository.findById(projectId)
                         .orElseGet(() -> ProjectAllocations.empty(projectId));
-        projectAllocations.addDemands(demands, Instant.now(clock));
+        Optional<ProjectAllocationsDemandsScheduled> event = projectAllocations.addDemands(demands, Instant.now(clock));
+        event.ifPresent(
+                eventsPublisher::publish
+        );
         projectAllocationsRepository.save(projectAllocations);
     }
 }

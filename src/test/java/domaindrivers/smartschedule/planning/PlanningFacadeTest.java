@@ -1,12 +1,16 @@
 package domaindrivers.smartschedule.planning;
 
+import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
 import domaindrivers.smartschedule.SmartScheduleApplication;
 import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
+import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -22,14 +26,18 @@ import static domaindrivers.smartschedule.planning.Demand.demandFor;
 import static domaindrivers.smartschedule.shared.capability.Capability.skill;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.argThat;
 
-@SpringBootTest(classes = {PlanningConfiguration.class, SmartScheduleApplication.class})
-@Import({TestDbConfiguration.class})
+@SpringBootTest
+@Import({TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
 @Sql(scripts = {"classpath:schema-planning.sql", "classpath:schema-availability.sql"})
 class PlanningFacadeTest {
 
     @Autowired
     PlanningFacade projectFacade;
+
+    @Autowired
+    EventsPublisher eventsPublisher;
 
     @Test
     void canCreateProjectAndLoadProjectCard() {
@@ -193,6 +201,26 @@ class PlanningFacadeTest {
         //then
         ProjectCard loaded = projectFacade.load(projectId);
         assertThat(loaded.schedule().dates()).containsExactlyInAnyOrderEntriesOf(dates);
+    }
+
+    @Test
+    void capabilitiesDemandedEventIsEmittedAfterAddingDemands() {
+        //given
+        ProjectId projectId =
+                projectFacade.addNewProject("project", new Stage("Stage1"));
+        //and
+        Demands demandForJava = Demands.of(demandFor(skill("JAVA")));
+        projectFacade.addDemands(projectId, demandForJava);
+
+        //then
+        Mockito.verify(eventsPublisher).publish(argThat(capabilitiesDemanded(projectId, demandForJava)));
+    }
+
+    ArgumentMatcher<CapabilitiesDemanded> capabilitiesDemanded(ProjectId projectId, Demands demands) {
+        return event ->
+                event.projectId().equals(projectId) &&
+                        event.demands().equals(demands) &&
+                        event.uuid() != null;
     }
 
 }

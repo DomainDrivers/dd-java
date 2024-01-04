@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.availability;
 
+import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
 import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +14,7 @@ import org.springframework.test.context.jdbc.Sql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(classes = {TestDbConfiguration.class, AvailabilityConfiguration.class})
+@SpringBootTest(classes = {TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
 @Sql(scripts = "classpath:schema-availability.sql")
 class ResourceAvailabilityUniquenessTest {
 

@@ -3,6 +3,7 @@ package domaindrivers.smartschedule.allocation;
 
 import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityFinder;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
+import domaindrivers.smartschedule.shared.EventsPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,8 +17,9 @@ class AllocationConfiguration {
             ProjectAllocationsRepository projectAllocationsRepository,
             AvailabilityFacade availabilityFacade,
             CapabilityFinder capabilityFinder,
+            EventsPublisher eventsPublisher,
             Clock clock) {
-        return new AllocationFacade(projectAllocationsRepository, availabilityFacade, capabilityFinder, clock);
+        return new AllocationFacade(projectAllocationsRepository, availabilityFacade, capabilityFinder, eventsPublisher, clock);
     }
 
 

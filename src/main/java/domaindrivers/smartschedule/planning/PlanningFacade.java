@@ -4,10 +4,11 @@ package domaindrivers.smartschedule.planning;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.*;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
-import domaindrivers.smartschedule.shared.ResourceName;
+import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
@@ -21,11 +22,15 @@ public class PlanningFacade {
     private final ProjectRepository projectRepository;
     private final StageParallelization parallelization;
     private final PlanChosenResources planChosenResourcesService;
+    private EventsPublisher eventsPublisher;
+    private Clock clock;
 
-    public PlanningFacade(ProjectRepository projectRepository, StageParallelization parallelization, PlanChosenResources resourcesPlanning) {
+    public PlanningFacade(ProjectRepository projectRepository, StageParallelization parallelization, PlanChosenResources resourcesPlanning, EventsPublisher eventsPublisher, Clock clock) {
         this.projectRepository = projectRepository;
         this.parallelization = parallelization;
         this.planChosenResourcesService = resourcesPlanning;
+        this.eventsPublisher = eventsPublisher;
+        this.clock = clock;
     }
 
     public ProjectId addNewProject(String name, Stage... stages) {
@@ -56,12 +61,14 @@ public class PlanningFacade {
     public void addDemands(ProjectId projectId, Demands demands) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addDemands(demands);
+        eventsPublisher.publish(new CapabilitiesDemanded(projectId, project.getAllDemands(), clock.instant()));
     }
 
     @Transactional
     public void defineDemandsPerStage(ProjectId projectId, DemandsPerStage demandsPerStage) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addDemandsPerStage(demandsPerStage);
+        eventsPublisher.publish(new CapabilitiesDemanded(projectId, project.getAllDemands(), clock.instant()));
     }
 
     @Transactional
@@ -78,12 +85,14 @@ public class PlanningFacade {
     public void planCriticalStageWithResource(ProjectId projectId, Stage criticalStage, ResourceId resourceId, TimeSlot stageTimeSlot) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addSchedule(criticalStage, stageTimeSlot);
+        eventsPublisher.publish(new CriticalStagePlanned(projectId, stageTimeSlot, resourceId, clock.instant()));
     }
 
     @Transactional
     public void planCriticalStage(ProjectId projectId, Stage criticalStage, TimeSlot stageTimeSlot) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addSchedule(criticalStage, stageTimeSlot);
+        eventsPublisher.publish(new CriticalStagePlanned(projectId, stageTimeSlot, null, clock.instant()));
     }
 
     @Transactional

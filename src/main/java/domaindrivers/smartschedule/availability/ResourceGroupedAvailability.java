@@ -5,6 +5,8 @@ import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static domaindrivers.smartschedule.availability.segment.SegmentInMinutes.defaultSegment;
 import static java.util.stream.Collectors.toList;
@@ -105,5 +107,12 @@ class ResourceGroupedAvailability {
 
     boolean hasNoSlots() {
         return resourceAvailabilities.isEmpty();
+    }
+
+    Set<Owner> owners() {
+        return resourceAvailabilities
+                .stream()
+                .map(ResourceAvailability::blockedBy)
+                .collect(Collectors.toSet());
     }
 }
