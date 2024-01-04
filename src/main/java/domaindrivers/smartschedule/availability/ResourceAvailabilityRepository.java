@@ -111,8 +111,8 @@ class ResourceAvailabilityRepository {
                         availabilityId.id());
     }
 
-    public ResourceGroupedAvailability loadAvailabilitiesOfRandomResourceWithin(Set<ResourceAvailabilityId> resourceIds, TimeSlot normalized) {
-        UUID[] ids = resourceIds.stream().map(ResourceAvailabilityId::id).toArray(UUID[]::new);
+    public ResourceGroupedAvailability loadAvailabilitiesOfRandomResourceWithin(Set<ResourceId> resourceIds, TimeSlot normalized) {
+        UUID[] ids = resourceIds.stream().map(ResourceId::getId).toArray(UUID[]::new);
         List<ResourceAvailability> availabilities = jdbcTemplate
                 .query("WITH AvailableResources AS (" +
                                 "                        SELECT resource_id" +

@@ -81,7 +81,22 @@ public class AllocationFacade {
 
     @Transactional
     boolean allocateCapabilityToProjectForPeriod(ProjectAllocationsId projectId, Capability capability, TimeSlot timeSlot) {
-        return false;
+        AllocatableCapabilitiesSummary proposedCapabilities = capabilityFinder
+                .findCapabilities(capability, timeSlot);
+        if (proposedCapabilities.all().isEmpty()) {
+            return false;
+        }
+        Set<ResourceId> availabilityResourceIds =
+                proposedCapabilities.all()
+                        .stream()
+                        .map(resource -> resource.id().toAvailabilityResourceId())
+                        .collect(Collectors.toSet());
+        Optional<ResourceId> chosen = availabilityFacade.blockRandomAvailable(availabilityResourceIds, timeSlot, Owner.of(projectId.id()));
+        if (chosen.isEmpty()) {
+            return false;
+        }
+        AllocatableCapabilityId toAllocate = findChosenAllocatableCapability(proposedCapabilities, chosen.get());
+        return allocate(projectId, toAllocate, capability, timeSlot).isPresent();
     }
 
     private AllocatableCapabilityId findChosenAllocatableCapability(AllocatableCapabilitiesSummary proposedCapabilities, ResourceId chosen) {

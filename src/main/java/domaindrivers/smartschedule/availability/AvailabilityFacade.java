@@ -5,6 +5,7 @@ import domaindrivers.smartschedule.availability.segment.Segments;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static domaindrivers.smartschedule.availability.segment.SegmentInMinutes.defaultSegment;
@@ -70,6 +71,17 @@ public class AvailabilityFacade {
             result = availabilityRepository.saveCheckingVersion(toDisable);
         }
         return result;
+    }
+
+    @Transactional
+    public Optional<ResourceId> blockRandomAvailable(Set<ResourceId> resourceIds, TimeSlot within, Owner owner) {
+        TimeSlot normalized = Segments.normalizeToSegmentBoundaries(within, defaultSegment());
+        ResourceGroupedAvailability groupedAvailability = availabilityRepository.loadAvailabilitiesOfRandomResourceWithin(resourceIds, normalized);
+        if (block(owner, groupedAvailability)) {
+            return groupedAvailability.resourceId();
+        } else {
+            return Optional.empty();
+        }
     }
 
     public ResourceGroupedAvailability findGrouped(ResourceId resourceId, TimeSlot within) {
