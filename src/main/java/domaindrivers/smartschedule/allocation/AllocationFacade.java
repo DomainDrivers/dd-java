@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.availability.Owner;
 import domaindrivers.smartschedule.availability.ResourceId;
@@ -43,9 +44,9 @@ public class AllocationFacade {
     }
 
     @Transactional
-    public Optional<UUID> allocateToProject(ProjectAllocationsId projectId, ResourceId resourceId, Capability capability, TimeSlot timeSlot) {
+    public Optional<UUID> allocateToProject(ProjectAllocationsId projectId, AllocatableCapabilityId resourceId, Capability capability, TimeSlot timeSlot) {
         //yes, one transaction crossing 2 modules.
-        if (!availabilityFacade.block(resourceId, timeSlot, Owner.of(projectId.id()))) {
+        if (!availabilityFacade.block(resourceId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()))) {
             return Optional.empty();
         }
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
@@ -55,7 +56,7 @@ public class AllocationFacade {
     }
 
     @Transactional
-    public boolean releaseFromProject(ProjectAllocationsId projectId, UUID allocatableCapabilityId, TimeSlot timeSlot) {
+    public boolean releaseFromProject(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, TimeSlot timeSlot) {
         //TODO WHAT TO DO WITH AVAILABILITY HERE?
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
         Optional<CapabilityReleased> event = allocations.release(allocatableCapabilityId, timeSlot, Instant.now(clock));

@@ -1,6 +1,6 @@
 package domaindrivers.smartschedule.allocation;
 
-import domaindrivers.smartschedule.availability.ResourceId;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
@@ -9,7 +9,6 @@ import org.hibernate.annotations.Type;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 @Entity(name = "project_allocations")
 class ProjectAllocations {
@@ -53,14 +52,14 @@ class ProjectAllocations {
         this.demands = demands;
     }
 
-    Optional<CapabilitiesAllocated> allocate(ResourceId resourceId, Capability capability, TimeSlot requestedSlot, Instant when) {
-        AllocatedCapability allocatedCapability = new AllocatedCapability(resourceId.getId(), capability, requestedSlot);
+    Optional<CapabilitiesAllocated> allocate(AllocatableCapabilityId allocatableCapabilityId, Capability capability, TimeSlot requestedSlot, Instant when) {
+        AllocatedCapability allocatedCapability = new AllocatedCapability(allocatableCapabilityId, capability, requestedSlot);
         Allocations newAllocations = allocations.add(allocatedCapability);
         if (nothingAllocated(newAllocations) || !withinProjectTimeSlot(requestedSlot)) {
             return Optional.empty();
         }
         allocations = newAllocations;
-        return Optional.of(new CapabilitiesAllocated(allocatedCapability.allocatedCapabilityID(), projectId, missingDemands(), when));
+        return Optional.of(new CapabilitiesAllocated(allocatedCapability.allocatedCapabilityID().getId(), projectId, missingDemands(), when));
     }
 
     private boolean nothingAllocated(Allocations newAllocations) {
@@ -74,7 +73,7 @@ class ProjectAllocations {
         return requestedSlot.within(timeSlot);
     }
 
-    Optional<CapabilityReleased> release(UUID allocatedCapabilityId, TimeSlot timeSlot, Instant when) {
+    Optional<CapabilityReleased> release(AllocatableCapabilityId allocatedCapabilityId, TimeSlot timeSlot, Instant when) {
         Allocations newAllocations = allocations.remove(allocatedCapabilityId, timeSlot);
         if (newAllocations.equals(allocations)) {
             return Optional.empty();

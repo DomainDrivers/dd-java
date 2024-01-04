@@ -1,10 +1,14 @@
 package domaindrivers.smartschedule.allocation;
 
 import domaindrivers.smartschedule.TestDbConfiguration;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableResourceId;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityScheduler;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.availability.Calendars;
 import domaindrivers.smartschedule.availability.Owner;
 import domaindrivers.smartschedule.availability.ResourceId;
+import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
@@ -27,11 +31,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Sql(scripts = {"classpath:schema-allocations.sql", "classpath:schema-availability.sql"})
 class CapabilityAllocatingTest {
 
+    static final AllocatableResourceId RESOURCE_ID = AllocatableResourceId.newOne();
+
     @Autowired
     AllocationFacade allocationFacade;
 
     @Autowired
     AvailabilityFacade availabilityFacade;
+
+    @Autowired
+    CapabilityScheduler capabilityScheduler;
 
     @Test
     void canAllocateCapabilityToProject() {
@@ -40,21 +49,21 @@ class CapabilityAllocatingTest {
         Capability skillJava = Capability.skill("JAVA");
         Demand demand = new Demand(skillJava, oneDay);
         //and
-        ResourceId allocatableResourceId = createAllocatableResource(oneDay);
+        AllocatableCapabilityId allocatableCapabilityId = createAllocatableResource(oneDay, skillJava, RESOURCE_ID);
         //and
         ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
         //and
         allocationFacade.scheduleProjectAllocationDemands(projectId, Demands.of(demand));
 
         //when
-        Optional<UUID> result = allocationFacade.allocateToProject(projectId, allocatableResourceId, skillJava, oneDay);
+        Optional<UUID> result = allocationFacade.allocateToProject(projectId, allocatableCapabilityId, skillJava, oneDay);
 
         //then
         assertTrue(result.isPresent());
         ProjectsAllocationsSummary summary = allocationFacade.findAllProjectsAllocations();
-        assertThat(summary.projectAllocations().get(projectId).all()).containsExactly(new AllocatedCapability(allocatableResourceId.getId(), skillJava, oneDay));
+        assertThat(summary.projectAllocations().get(projectId).all()).containsExactly(new AllocatedCapability(allocatableCapabilityId, skillJava, oneDay));
         assertThat(summary.demands().get(projectId).all()).containsExactly(demand);
-        assertThat(availabilityWasBlocked(allocatableResourceId, oneDay, projectId)).isTrue();
+        assertThat(availabilityWasBlocked(allocatableCapabilityId.toAvailabilityResourceId(), oneDay, projectId)).isTrue();
     }
 
     @Test
@@ -64,16 +73,16 @@ class CapabilityAllocatingTest {
         Capability skillJava = Capability.skill("JAVA");
         Demand demand = new Demand(skillJava, oneDay);
         //and
-        ResourceId allocatableResourceId = createAllocatableResource(oneDay);
+        AllocatableCapabilityId allocatableCapabilityId = createAllocatableResource(oneDay, skillJava, RESOURCE_ID);
         //and
-        availabilityFacade.block(allocatableResourceId, oneDay, Owner.newOne());
+        availabilityFacade.block(allocatableCapabilityId.toAvailabilityResourceId(), oneDay, Owner.newOne());
         //and
         ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
         //and
         allocationFacade.scheduleProjectAllocationDemands(projectId, Demands.of(demand));
 
         //when
-        Optional<UUID> result = allocationFacade.allocateToProject(projectId, allocatableResourceId, skillJava, oneDay);
+        Optional<UUID> result = allocationFacade.allocateToProject(projectId, allocatableCapabilityId, skillJava, oneDay);
 
         //then
         assertFalse(result.isPresent());
@@ -86,17 +95,17 @@ class CapabilityAllocatingTest {
         //given
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
         //and
-        ResourceId allocatableResourceId = createAllocatableResource(oneDay);
+        AllocatableCapabilityId allocatableCapabilityId = createAllocatableResource(oneDay, Capability.skill("JAVA"), RESOURCE_ID);
         //and
         ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
         //and
         allocationFacade.scheduleProjectAllocationDemands(projectId, Demands.none());
         //and
         Capability chosenCapability = Capability.skill("JAVA");
-        Optional<UUID> allocatedId = allocationFacade.allocateToProject(projectId, allocatableResourceId, chosenCapability, oneDay);
+        allocationFacade.allocateToProject(projectId, allocatableCapabilityId, chosenCapability, oneDay);
 
         //when
-        boolean result = allocationFacade.releaseFromProject(projectId, allocatedId.get(), oneDay);
+        boolean result = allocationFacade.releaseFromProject(projectId, allocatableCapabilityId, oneDay);
 
         //then
         assertTrue(result);
@@ -104,10 +113,11 @@ class CapabilityAllocatingTest {
         assertThat(summary.projectAllocations().get(projectId).all()).isEmpty();
     }
 
-    ResourceId createAllocatableResource(TimeSlot period) {
-        ResourceId resourceId = ResourceId.newOne();
-        availabilityFacade.createResourceSlots(resourceId, period);
-        return resourceId;
+    AllocatableCapabilityId createAllocatableResource(TimeSlot period, Capability capability, AllocatableResourceId resourceId) {
+        List<CapabilitySelector> capabilities = List.of(CapabilitySelector.canJustPerform(capability));
+        List<AllocatableCapabilityId> allocatableCapabilityIds = capabilityScheduler.scheduleResourceCapabilitiesForPeriod(resourceId, capabilities, period);
+        assert allocatableCapabilityIds.size() == 1;
+        return allocatableCapabilityIds.get(0);
     }
 
     boolean availabilityWasBlocked(ResourceId resource, TimeSlot period, ProjectAllocationsId projectId) {
@@ -119,7 +129,6 @@ class CapabilityAllocatingTest {
                 .allMatch(calendar -> calendar.takenBy(Owner.of(projectId.id())).equals(List.of(period)));
 
     }
-
 
 
 }

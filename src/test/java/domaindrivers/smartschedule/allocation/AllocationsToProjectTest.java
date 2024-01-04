@@ -1,5 +1,7 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableResourceId;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
@@ -17,7 +19,7 @@ class AllocationsToProjectTest {
 
     static final Instant WHEN = Instant.MIN;
     static final ProjectAllocationsId PROJECT_ID = ProjectAllocationsId.newOne();
-    static final ResourceId ADMIN_ID = ResourceId.newOne();
+    static final AllocatableCapabilityId ADMIN_ID = AllocatableCapabilityId.newOne();
     static final TimeSlot FEB_1 = TimeSlot.createDailyTimeSlotAtUTC(2020, 2, 1);
     static final TimeSlot FEB_2 = TimeSlot.createDailyTimeSlotAtUTC(2020, 2, 2);
     static final TimeSlot JANUARY = TimeSlot.createMonthlyTimeSlotAtUTC(2020, 1);
@@ -104,7 +106,8 @@ class AllocationsToProjectTest {
         //and
         Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
         //when
-        Optional<CapabilityReleased> event = allocations.release(allocatedAdmin.get().allocatedCapabilityId(), FEB_1, WHEN);
+        AllocatableCapabilityId adminId = new AllocatableCapabilityId(allocatedAdmin.get().allocatedCapabilityId());
+        Optional<CapabilityReleased> event = allocations.release(adminId, FEB_1, WHEN);
 
         //then
         assertThat(event).isPresent();
@@ -117,7 +120,7 @@ class AllocationsToProjectTest {
         ProjectAllocations allocations = ProjectAllocations.empty(PROJECT_ID);
 
         //when
-        Optional<CapabilityReleased> event = allocations.release(UUID.randomUUID(), FEB_1, WHEN);
+        Optional<CapabilityReleased> event = allocations.release(AllocatableCapabilityId.newOne(), FEB_1, WHEN);
 
         //then
         assertThat(event).isEmpty();
@@ -131,9 +134,9 @@ class AllocationsToProjectTest {
         ProjectAllocations allocations = ProjectAllocations.withDemands(PROJECT_ID, Demands.of(demandForAdmin, demandForJava));
         //and
         Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
-        allocations.allocate(ADMIN_ID, Capability.skill("JAVA"), FEB_1, WHEN);
+        allocations.allocate(AllocatableCapabilityId.newOne(), Capability.skill("JAVA"), FEB_1, WHEN);
         //when
-        Optional<CapabilityReleased> event = allocations.release(allocatedAdmin.get().allocatedCapabilityId(), FEB_1, WHEN);
+        Optional<CapabilityReleased> event = allocations.release(new AllocatableCapabilityId(allocatedAdmin.get().allocatedCapabilityId()), FEB_1, WHEN);
 
         //then
         assertThat(event).isPresent();
@@ -148,7 +151,7 @@ class AllocationsToProjectTest {
         Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
 
         //when
-        Optional<CapabilityReleased> event = allocations.release(allocatedAdmin.get().allocatedCapabilityId(), FEB_2, WHEN);
+        Optional<CapabilityReleased> event = allocations.release(new AllocatableCapabilityId(allocatedAdmin.get().allocatedCapabilityId()), FEB_2, WHEN);
 
         //then
         assertThat(event).isEmpty();
@@ -168,13 +171,13 @@ class AllocationsToProjectTest {
         TimeSlot theRest = new TimeSlot(FEB_1.from().plus(2, ChronoUnit.HOURS), FEB_1.to());
 
         //when
-        Optional<CapabilityReleased> event = allocations.release(allocatedAdmin.get().allocatedCapabilityId(), fifteenMinutesIn1Feb, WHEN);
+        Optional<CapabilityReleased> event = allocations.release(new AllocatableCapabilityId(allocatedAdmin.get().allocatedCapabilityId()), fifteenMinutesIn1Feb, WHEN);
 
         //then
         assertThat(event).contains(new CapabilityReleased(event.get().eventId(), PROJECT_ID, Demands.none(), WHEN));
         assertThat(allocations.allocations().all()).containsExactlyInAnyOrder(
-                new AllocatedCapability(ADMIN_ID.getId(), permission("ADMIN"), oneHourBefore),
-                new AllocatedCapability(ADMIN_ID.getId(), permission("ADMIN"), theRest));
+                new AllocatedCapability(ADMIN_ID, permission("ADMIN"), oneHourBefore),
+                new AllocatedCapability(ADMIN_ID, permission("ADMIN"), theRest));
     }
 
     @Test

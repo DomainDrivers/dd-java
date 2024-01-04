@@ -10,18 +10,18 @@ import java.util.Map;
 
 record PotentialTransfers(ProjectsAllocationsSummary summary, Map<ProjectAllocationsId, Earnings> earnings) {
 
-    PotentialTransfers transfer(ProjectAllocationsId projectFrom, ProjectAllocationsId projectTo, AllocatedCapability capability, TimeSlot forSlot) {
+    PotentialTransfers transfer(ProjectAllocationsId projectFrom, ProjectAllocationsId projectTo, AllocatedCapability allocatedCapability, TimeSlot forSlot) {
         Allocations from = summary.projectAllocations().get(projectFrom);
         Allocations to = summary.projectAllocations().get(projectTo);
         if (from == null || to == null) {
             return this;
         }
-        Allocations newAllocationsProjectFrom = from.remove(capability.allocatedCapabilityID(), forSlot);
+        Allocations newAllocationsProjectFrom = from.remove(allocatedCapability.allocatedCapabilityID(), forSlot);
         if (newAllocationsProjectFrom.equals(from)) {
             return this;
         }
         summary.projectAllocations().put(projectFrom, newAllocationsProjectFrom);
-        Allocations newAllocationsProjectTo = to.add(new AllocatedCapability(capability.resourceId(), capability.capability(), forSlot));
+        Allocations newAllocationsProjectTo = to.add(new AllocatedCapability(allocatedCapability.allocatedCapabilityID(), allocatedCapability.capability(), forSlot));
         summary.projectAllocations().put(projectTo, newAllocationsProjectTo);
         return new PotentialTransfers(summary, earnings);
     }
