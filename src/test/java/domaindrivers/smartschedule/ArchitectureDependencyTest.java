@@ -36,8 +36,8 @@ public class ArchitectureDependencyTest {
                 .whereLayer("optimization").mayOnlyAccessLayers("shared")
                 .whereLayer("cashflow").mayOnlyAccessLayers("shared", "allocation")
                 .whereLayer("capabilityscheduling").mayOnlyAccessLayers("shared", "availability")
-                .whereLayer("employee").mayOnlyAccessLayers("allocation", "shared")
-                .whereLayer("device").mayOnlyAccessLayers("allocation", "shared")
+                .whereLayer("employee").mayOnlyAccessLayers("capabilityscheduling", "shared")
+                .whereLayer("device").mayOnlyAccessLayers("capabilityscheduling", "shared")
                 .whereLayer("capabilityscheduling-acl").mayOnlyAccessLayers("shared", "capabilityscheduling")
                 .whereLayer("shared").mayNotAccessAnyLayer()
                 .check(classes);

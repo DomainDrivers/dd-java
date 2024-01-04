@@ -32,7 +32,7 @@ public class CapabilityFinder {
         return createSummary(found);
     }
 
-    AllocatableCapabilitiesSummary findById(List<AllocatableCapabilityId> allocatableCapabilityIds) {
+    public AllocatableCapabilitiesSummary findById(List<AllocatableCapabilityId> allocatableCapabilityIds) {
         List<AllocatableCapability> allByIdIn = allocatableResourceRepository.findAllById(allocatableCapabilityIds);
         return createSummary(allByIdIn);
     }

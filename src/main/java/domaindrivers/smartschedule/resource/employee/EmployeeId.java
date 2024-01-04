@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.resource.employee;
 
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableResourceId;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
@@ -25,5 +26,8 @@ public class EmployeeId implements Serializable {
         return employeeId;
     }
 
+    public AllocatableResourceId toAllocatableResourceId() {
+        return new AllocatableResourceId(employeeId);
+    }
 }
 

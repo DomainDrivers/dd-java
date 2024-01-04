@@ -1,6 +1,7 @@
 package domaindrivers.smartschedule.resource.employee;
 
 
+import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityScheduler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 class EmployeeConfiguration {
 
     @Bean
-    EmployeeFacade employeeFacade(EmployeeRepository employeeRepository) {
-        return new EmployeeFacade(employeeRepository);
+    EmployeeFacade employeeFacade(EmployeeRepository employeeRepository, CapabilityScheduler capabilityScheduler) {
+        return new EmployeeFacade(employeeRepository, new ScheduleEmployeeCapabilities(employeeRepository, capabilityScheduler));
     }
 
 }

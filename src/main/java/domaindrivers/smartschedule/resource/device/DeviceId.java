@@ -1,9 +1,13 @@
 package domaindrivers.smartschedule.resource.device;
 
 
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableResourceId;
+import domaindrivers.smartschedule.shared.CapabilitySelector;
+import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 @Embeddable
@@ -24,5 +28,9 @@ public class DeviceId implements Serializable {
 
     public UUID id() {
         return deviceId;
+    }
+
+    public AllocatableResourceId toAllocatableResourceId() {
+        return new AllocatableResourceId(deviceId);
     }
 }
