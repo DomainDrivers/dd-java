@@ -1,9 +1,9 @@
 package domaindrivers.smartschedule.allocation;
 
 import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityFinder;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.availability.Owner;
-import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;
@@ -19,11 +19,13 @@ public class AllocationFacade {
 
     private final ProjectAllocationsRepository projectAllocationsRepository;
     private final AvailabilityFacade availabilityFacade;
+    private final CapabilityFinder capabilityFinder;
     private final Clock clock;
 
-    public AllocationFacade(ProjectAllocationsRepository projectAllocationsRepository, AvailabilityFacade availabilityFacade, Clock clock) {
+    public AllocationFacade(ProjectAllocationsRepository projectAllocationsRepository, AvailabilityFacade availabilityFacade, CapabilityFinder capabilityFinder, Clock clock) {
         this.projectAllocationsRepository = projectAllocationsRepository;
         this.availabilityFacade = availabilityFacade;
+        this.capabilityFinder = capabilityFinder;
         this.clock = clock;
     }
 
@@ -44,20 +46,24 @@ public class AllocationFacade {
     }
 
     @Transactional
-    public Optional<UUID> allocateToProject(ProjectAllocationsId projectId, AllocatableCapabilityId resourceId, Capability capability, TimeSlot timeSlot) {
+    public Optional<UUID> allocateToProject(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, Capability capability, TimeSlot timeSlot) {
         //yes, one transaction crossing 2 modules.
-        if (!availabilityFacade.block(resourceId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()))) {
+        if (!capabilityFinder.isPresent(allocatableCapabilityId)) {
+            return Optional.empty();
+        }
+        if (!availabilityFacade.block(allocatableCapabilityId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()))) {
             return Optional.empty();
         }
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
-        Optional<CapabilitiesAllocated> event = allocations.allocate(resourceId, capability, timeSlot, Instant.now(clock));
+        Optional<CapabilitiesAllocated> event = allocations.allocate(allocatableCapabilityId, capability, timeSlot, Instant.now(clock));
         projectAllocationsRepository.save(allocations);
         return event.map(CapabilitiesAllocated::allocatedCapabilityId);
     }
 
     @Transactional
     public boolean releaseFromProject(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, TimeSlot timeSlot) {
-        //TODO WHAT TO DO WITH AVAILABILITY HERE?
+        //can release not scheduled capability - at least for now. Hence no check to capabilityFinder
+        availabilityFacade.release(allocatableCapabilityId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()));
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
         Optional<CapabilityReleased> event = allocations.release(allocatableCapabilityId, timeSlot, Instant.now(clock));
         projectAllocationsRepository.save(allocations);

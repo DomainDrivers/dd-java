@@ -57,4 +57,7 @@ public class CapabilityFinder {
                         .collect(toList()));
     }
 
+    public boolean isPresent(AllocatableCapabilityId allocatableCapabilityId) {
+        return allocatableResourceRepository.existsById(allocatableCapabilityId);
+    }
 }

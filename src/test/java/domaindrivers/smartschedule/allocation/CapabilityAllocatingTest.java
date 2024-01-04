@@ -91,6 +91,28 @@ class CapabilityAllocatingTest {
     }
 
     @Test
+    void cantAllocateWhenCapabilityHasNotBeenScheduled() {
+        //given
+        TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
+        Capability skillJava = Capability.skill("JAVA");
+        Demand demand = new Demand(skillJava, oneDay);
+        //and
+        AllocatableCapabilityId notScheduledCapability = AllocatableCapabilityId.newOne();
+        //and
+        ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
+        //and
+        allocationFacade.scheduleProjectAllocationDemands(projectId, Demands.of(demand));
+
+        //when
+        Optional<UUID> result = allocationFacade.allocateToProject(projectId, notScheduledCapability, skillJava, oneDay);
+
+        //then
+        assertFalse(result.isPresent());
+        ProjectsAllocationsSummary summary = allocationFacade.findAllProjectsAllocations();
+        assertThat(summary.projectAllocations().get(projectId).all()).isEmpty();
+    }
+
+    @Test
     void canReleaseCapabilityFromProject() {
         //given
         TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
@@ -111,6 +133,8 @@ class CapabilityAllocatingTest {
         assertTrue(result);
         ProjectsAllocationsSummary summary = allocationFacade.findAllProjectsAllocations();
         assertThat(summary.projectAllocations().get(projectId).all()).isEmpty();
+        assertThat(availabilityIsReleased(oneDay, allocatableCapabilityId, projectId)).isTrue();
+
     }
 
     AllocatableCapabilityId createAllocatableResource(TimeSlot period, Capability capability, AllocatableResourceId resourceId) {
@@ -128,6 +152,10 @@ class CapabilityAllocatingTest {
                 .stream()
                 .allMatch(calendar -> calendar.takenBy(Owner.of(projectId.id())).equals(List.of(period)));
 
+    }
+
+    boolean availabilityIsReleased(TimeSlot oneDay, AllocatableCapabilityId allocatableCapabilityId, ProjectAllocationsId projectId) {
+        return !availabilityWasBlocked(allocatableCapabilityId.toAvailabilityResourceId(), oneDay, projectId);
     }
 
 
