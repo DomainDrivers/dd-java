@@ -102,4 +102,8 @@ class ResourceGroupedAvailability {
                 .stream()
                 .allMatch(ra -> ra.blockedBy().byNone());
     }
+
+    boolean hasNoSlots() {
+        return resourceAvailabilities.isEmpty();
+    }
 }

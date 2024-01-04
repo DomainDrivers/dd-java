@@ -72,6 +72,20 @@ class AvailabilityFacadeTest {
     }
 
     @Test
+    void cantBlockWhenNoSlotsCreated() {
+        //given
+        ResourceId resourceId = ResourceId.newOne();
+        TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
+        Owner owner = Owner.newOne();
+
+        //when
+        boolean result = availabilityFacade.block(resourceId, oneDay, owner);
+
+        //then
+        assertFalse(result);
+    }
+
+    @Test
     void canDisableAvailabilities() {
         //given
         ResourceId resourceId = ResourceId.newOne();
@@ -87,6 +101,20 @@ class AvailabilityFacadeTest {
         ResourceGroupedAvailability resourceAvailabilities = availabilityFacade.find(resourceId, oneDay);
         assertEquals(96, resourceAvailabilities.size());
         assertThat(resourceAvailabilities.isDisabledEntirelyBy(owner)).isTrue();
+    }
+
+    @Test
+    void cantDisableWhenNoSlotsCreated() {
+        //given
+        ResourceId resourceId = ResourceId.newOne();
+        TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
+        Owner owner = Owner.newOne();
+
+        //when
+        boolean result = availabilityFacade.disable(resourceId, oneDay, owner);
+
+        //then
+        assertFalse(result);
     }
 
     @Test
@@ -129,6 +157,20 @@ class AvailabilityFacadeTest {
         assertTrue(result);
         ResourceGroupedAvailability resourceAvailability = availabilityFacade.find(resourceId, oneDay);
         assertThat(resourceAvailability.isEntirelyAvailable()).isTrue();
+    }
+
+    @Test
+    void cantReleaseWhenNoSlotsCreated() {
+        //given
+        ResourceId resourceId = ResourceId.newOne();
+        TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
+        Owner owner = Owner.newOne();
+
+        //when
+        boolean result = availabilityFacade.release(resourceId, oneDay, owner);
+
+        //then
+        assertFalse(result);
     }
 
     @Test
