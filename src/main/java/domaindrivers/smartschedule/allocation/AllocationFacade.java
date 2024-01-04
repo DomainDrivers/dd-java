@@ -1,9 +1,12 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilitiesSummary;
 import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilitySummary;
 import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityFinder;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.availability.Owner;
+import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import jakarta.transaction.Transactional;
@@ -13,6 +16,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 public class AllocationFacade {
@@ -54,10 +58,15 @@ public class AllocationFacade {
         if (!availabilityFacade.block(allocatableCapabilityId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()))) {
             return Optional.empty();
         }
+        Optional<CapabilitiesAllocated> event = allocate(projectId, allocatableCapabilityId, capability, timeSlot);
+        return event.map(CapabilitiesAllocated::allocatedCapabilityId);
+    }
+
+    private Optional<CapabilitiesAllocated> allocate(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, Capability capability, TimeSlot timeSlot) {
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
         Optional<CapabilitiesAllocated> event = allocations.allocate(allocatableCapabilityId, capability, timeSlot, Instant.now(clock));
         projectAllocationsRepository.save(allocations);
-        return event.map(CapabilitiesAllocated::allocatedCapabilityId);
+        return event;
     }
 
     @Transactional
@@ -68,6 +77,19 @@ public class AllocationFacade {
         Optional<CapabilityReleased> event = allocations.release(allocatableCapabilityId, timeSlot, Instant.now(clock));
         projectAllocationsRepository.save(allocations);
         return event.isPresent();
+    }
+
+    @Transactional
+    boolean allocateCapabilityToProjectForPeriod(ProjectAllocationsId projectId, Capability capability, TimeSlot timeSlot) {
+        return false;
+    }
+
+    private AllocatableCapabilityId findChosenAllocatableCapability(AllocatableCapabilitiesSummary proposedCapabilities, ResourceId chosen) {
+        return proposedCapabilities.all().stream()
+                .map(AllocatableCapabilitySummary::id)
+                .filter(id -> id.toAvailabilityResourceId().equals(chosen))
+                .findFirst()
+                .orElse(null);
     }
 
     @Transactional

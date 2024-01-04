@@ -18,7 +18,7 @@ public record CapabilitySelector(Set<Capability> capabilities, SelectingPolicy s
         return new CapabilitySelector(capabilities, SelectingPolicy.ALL_SIMULTANEOUSLY);
     }
 
-    static CapabilitySelector canPerformOneOf(Set<Capability> capabilities) {
+    public static CapabilitySelector canPerformOneOf(Set<Capability> capabilities) {
         return new CapabilitySelector(capabilities, SelectingPolicy.ONE_OF_ALL);
     }
 
