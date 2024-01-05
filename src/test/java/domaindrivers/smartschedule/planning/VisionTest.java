@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.planning;
 
+import domaindrivers.smartschedule.TaskExecutorConfiguration;
 import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
@@ -23,9 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest
-@Import({TestDbConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql"})
-@Ignore
+@Import({TestDbConfiguration.class, TaskExecutorConfiguration.class})
+@Sql(scripts = {"classpath:schema-risk.sql", "classpath:schema-planning.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql"})
 class VisionTest {
 
     static final Instant JAN_1 = Instant.parse("2020-01-01T00:00:00.00Z");
@@ -40,7 +40,6 @@ class VisionTest {
     PlanningFacade projectFacade;
 
     @Test
-    @Disabled("not implemented yet")
     void visionValidationProcess() {
         //given
         ProjectId projectId =

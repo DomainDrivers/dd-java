@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.planning;
 
+import domaindrivers.smartschedule.TaskExecutorConfiguration;
 import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
@@ -21,8 +22,9 @@ import static domaindrivers.smartschedule.planning.schedule.assertions.ScheduleA
 
 
 @SpringBootTest
-@Import({TestDbConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql"})
+@Import({TestDbConfiguration.class, TaskExecutorConfiguration.class})
+@Sql(scripts = {"classpath:schema-risk.sql", "classpath:schema-planning.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql"})
+
 class SpecializedWaterfallTest {
 
     static final TimeSlot JAN_1_2 = new TimeSlot(Instant.parse("2020-01-01T00:00:00.00Z"), Instant.parse("2020-01-02T00:00:00Z"));
@@ -35,7 +37,6 @@ class SpecializedWaterfallTest {
     PlanningFacade projectFacade;
 
     @Test
-    @Disabled("not implemented yet")
     void specializedWaterfallProjectProcess() {
         //given
         ProjectId projectId =

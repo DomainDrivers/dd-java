@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.planning;
 
+import domaindrivers.smartschedule.TaskExecutorConfiguration;
 import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
@@ -19,8 +20,9 @@ import static domaindrivers.smartschedule.planning.schedule.assertions.ScheduleA
 
 
 @SpringBootTest
-@Import({TestDbConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql"})
+@Import({TestDbConfiguration.class, TaskExecutorConfiguration.class})
+@Sql(scripts = {"classpath:schema-risk.sql", "classpath:schema-planning.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql"})
+
 @Ignore
 class TimeCriticalWaterfallTest {
 
@@ -32,7 +34,6 @@ class TimeCriticalWaterfallTest {
     PlanningFacade projectFacade;
 
     @Test
-    @Disabled("not implemented yet")
     void timeCriticalWaterfallProjectProcess() {
         //given
         ProjectId projectId =
