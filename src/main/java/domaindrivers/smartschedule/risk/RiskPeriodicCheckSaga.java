@@ -54,7 +54,7 @@ class RiskPeriodicCheckSaga {
     }
 
     boolean areDemandsSatisfied() {
-        return false;
+        return missingDemands.all().isEmpty();
     }
 
     Demands missingDemands() {
@@ -62,31 +62,61 @@ class RiskPeriodicCheckSaga {
     }
 
     RiskPeriodicCheckSagaStep handle(EarningsRecalculated event) {
-        return null;
+        earnings = event.earnings();
+        return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
     RiskPeriodicCheckSagaStep handle(ProjectAllocationsDemandsScheduled event) {
-        return null;
+        missingDemands = event.missingDemands();
+        if (areDemandsSatisfied()) {
+            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED;
+        }
+        return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
     RiskPeriodicCheckSagaStep handle(ProjectAllocationScheduled event) {
-        return null;
+        deadline = event.fromTo().to();
+        return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
     RiskPeriodicCheckSagaStep handle(ResourceTakenOver event) {
-        return null;
+        if (event.occurredAt().isAfter(deadline)) {
+            return RiskPeriodicCheckSagaStep.DO_NOTHING;
+        }
+        return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_POSSIBLE_RISK;
     }
 
     RiskPeriodicCheckSagaStep handle(CapabilityReleased event) {
-        return null;
+        this.missingDemands = event.missingDemands();
+        return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
     RiskPeriodicCheckSagaStep handle(CapabilitiesAllocated event) {
-        return null;
+        this.missingDemands = event.missingDemands();
+        if (areDemandsSatisfied()) {
+            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED;
+        }
+        return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
     RiskPeriodicCheckSagaStep handleWeeklyCheck(Instant when) {
-        return null;
+        if (deadline == null || when.isAfter(deadline)) {
+            return RiskPeriodicCheckSagaStep.DO_NOTHING;
+        }
+        if (areDemandsSatisfied()) {
+            return RiskPeriodicCheckSagaStep.DO_NOTHING;
+        }
+        long daysToDeadline = Duration.between(when, deadline).toDays();
+        if (daysToDeadline > UPCOMING_DEADLINE_AVAILABILITY_SEARCH) {
+            return RiskPeriodicCheckSagaStep.DO_NOTHING;
+        }
+        if (daysToDeadline > UPCOMING_DEADLINE_REPLACEMENT_SUGGESTION) {
+            return RiskPeriodicCheckSagaStep.FIND_AVAILABLE;
+        }
+        if (earnings.greaterThan(RISK_THRESHOLD_VALUE)) {
+            return RiskPeriodicCheckSagaStep.SUGGEST_REPLACEMENT;
+        }
+        return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
     ProjectAllocationsId projectId() {
