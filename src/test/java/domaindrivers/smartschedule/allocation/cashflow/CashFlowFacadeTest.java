@@ -1,30 +1,26 @@
 package domaindrivers.smartschedule.allocation.cashflow;
 
-import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
-import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.allocation.ProjectAllocationsId;
 import domaindrivers.smartschedule.shared.EventsPublisher;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.argThat;
 
-@SpringBootTest
-@Import({TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
-@Sql(scripts = "classpath:schema-cashflow.sql")
+
 class CashFlowFacadeTest {
 
-    @Autowired
-    CashFlowFacade cashFlowFacade;
+    static final Instant NOW = Instant.now();
 
-    @Autowired
-    EventsPublisher eventsPublisher;
+    EventsPublisher eventsPublisher = Mockito.mock(EventsPublisher.class);
+    Clock clock = Clock.fixed(NOW, ZoneId.systemDefault());
+    CashFlowFacade cashFlowFacade = CashFlowTestConfiguration.cashFlowFacade(eventsPublisher, clock);
 
     @Test
     void canSaveCashFlow() {

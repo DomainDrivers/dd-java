@@ -1,25 +1,19 @@
 package domaindrivers.smartschedule.allocation;
 
-import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
-import domaindrivers.smartschedule.TestDbConfiguration;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityFinder;
+import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Clock;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
-@SpringBootTest
-@Import({TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
-@Sql(scripts = {"classpath:schema-allocations.sql"})
+
 class DemandSchedulingTest {
 
     static final Demand JAVA = new Demand(
@@ -29,11 +23,12 @@ class DemandSchedulingTest {
             Instant.parse("2021-01-01T00:00:00.00Z"),
             Instant.parse("2021-01-06T00:00:00.00Z"));
 
-    @Autowired
-    AllocationFacade allocationFacade;
-
-    @Autowired
-    EventsPublisher eventsPublisher;
+    AllocationFacade allocationFacade =
+            new AllocationFacade(new InMemoryProjectAllocationsRepository(),
+                    mock(AvailabilityFacade.class),
+                    mock(CapabilityFinder.class),
+                    mock(EventsPublisher.class),
+                    Clock.systemDefaultZone());
 
     @Test
     void canScheduleProjectDemands() {

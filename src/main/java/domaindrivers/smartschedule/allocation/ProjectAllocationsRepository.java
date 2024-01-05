@@ -1,15 +1,21 @@
 package domaindrivers.smartschedule.allocation;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 
-interface ProjectAllocationsRepository extends JpaRepository<ProjectAllocations, ProjectAllocationsId> {
+interface ProjectAllocationsRepository  {
 
-    @Query(value = "SELECT * FROM project_allocations WHERE from_date <= :when AND to_date > :when",
-            nativeQuery = true)
     List<ProjectAllocations> findAllContainingDate(Instant when);
+
+    Optional<ProjectAllocations> findById(ProjectAllocationsId projectId);
+
+    ProjectAllocations save(ProjectAllocations project);
+
+    List<ProjectAllocations> findAllById(Set<ProjectAllocationsId> projectIds);
+
+    List<ProjectAllocations> findAll();
 }

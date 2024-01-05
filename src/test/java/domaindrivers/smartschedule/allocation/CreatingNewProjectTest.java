@@ -1,32 +1,32 @@
 package domaindrivers.smartschedule.allocation;
 
-import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
-import domaindrivers.smartschedule.TestDbConfiguration;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityFinder;
+import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Clock;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
-@SpringBootTest
-@Import({TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
-@Sql(scripts = {"classpath:schema-allocations.sql"})
+
 class CreatingNewProjectTest {
 
-    @Autowired
-    AllocationFacade allocationFacade;
+    EventsPublisher  eventsPublisher = mock(EventsPublisher.class);
 
-    @Autowired
-    EventsPublisher eventsPublisher;
+    AllocationFacade allocationFacade =
+            new AllocationFacade(new InMemoryProjectAllocationsRepository(),
+                    mock(AvailabilityFacade.class),
+                    mock(CapabilityFinder.class),
+                    eventsPublisher,
+                    Clock.systemDefaultZone());
+
 
     static TimeSlot JAN = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
     static TimeSlot FEB = TimeSlot.createDailyTimeSlotAtUTC(2021, 2, 1);
@@ -45,7 +45,6 @@ class CreatingNewProjectTest {
         assertThat(summary.demands().get(newProject)).isEqualTo(demands);
         assertThat(summary.timeSlots().get(newProject)).isEqualTo(JAN);
         Mockito.verify(eventsPublisher).publish(Mockito.argThat(isProjectAllocationsScheduledEvent(newProject, JAN)));
-
     }
 
     @Test

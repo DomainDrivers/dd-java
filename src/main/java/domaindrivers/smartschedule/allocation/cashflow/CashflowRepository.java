@@ -2,10 +2,16 @@ package domaindrivers.smartschedule.allocation.cashflow;
 
 
 import domaindrivers.smartschedule.allocation.ProjectAllocationsId;
-import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
 
 
-interface CashflowRepository extends JpaRepository<Cashflow, ProjectAllocationsId> {
+interface CashflowRepository  {
 
+    Optional<Cashflow> findById(ProjectAllocationsId projectId);
 
+    Cashflow save(Cashflow cashflow);
+
+    List<Cashflow> findAll();
 }

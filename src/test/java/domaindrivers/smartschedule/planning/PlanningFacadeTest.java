@@ -1,8 +1,5 @@
 package domaindrivers.smartschedule.planning;
 
-import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
-import domaindrivers.smartschedule.SmartScheduleApplication;
-import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.planning.parallelization.Stage;
 import domaindrivers.smartschedule.planning.schedule.Schedule;
@@ -11,10 +8,6 @@ import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -28,16 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.argThat;
 
-@SpringBootTest
-@Import({TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql", "classpath:schema-availability.sql"})
 class PlanningFacadeTest {
 
-    @Autowired
-    PlanningFacade projectFacade;
-
-    @Autowired
-    EventsPublisher eventsPublisher;
+    EventsPublisher eventsPublisher = Mockito.mock(EventsPublisher.class);
+    PlanningFacade projectFacade = PlanningTestConfiguration.planningFacade(eventsPublisher, new InMemoryProjectRepository());
 
     @Test
     void canCreateProjectAndLoadProjectCard() {

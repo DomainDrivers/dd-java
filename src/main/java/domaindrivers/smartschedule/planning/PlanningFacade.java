@@ -112,7 +112,7 @@ public class PlanningFacade {
 
     public List<ProjectCard> loadAll(Set<ProjectId> projectsIds) {
         return projectRepository
-                .findAllById(projectsIds)
+                .findAllByIdIn(projectsIds)
                 .stream()
                 .map(this::toSummary)
                 .toList();
