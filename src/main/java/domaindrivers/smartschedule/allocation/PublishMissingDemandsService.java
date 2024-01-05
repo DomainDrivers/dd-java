@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -40,9 +41,12 @@ class PublishMissingDemandsService {
 class CreateHourlyDemandsSummaryService {
 
     NotSatisfiedDemands create(List<ProjectAllocations> projectAllocations, Instant when) {
-        return new NotSatisfiedDemands(projectAllocations
-                .stream()
-                .collect(toMap(ProjectAllocations::id, ProjectAllocations::missingDemands)), when);
+        Map<ProjectAllocationsId, Demands> missingDemands =
+                projectAllocations
+                        .stream()
+                        .filter(ProjectAllocations::hasTimeSlot)
+                        .collect(toMap(ProjectAllocations::id, ProjectAllocations::missingDemands));
+        return new NotSatisfiedDemands(missingDemands, when);
     }
 }
 

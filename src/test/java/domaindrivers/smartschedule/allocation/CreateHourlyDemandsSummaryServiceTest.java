@@ -20,14 +20,13 @@ class CreateHourlyDemandsSummaryServiceTest {
 
     CreateHourlyDemandsSummaryService service = new CreateHourlyDemandsSummaryService();
 
-
     @Test
     void createsMissingDemandsSummaryForAllGivenProjects() {
         //given
         ProjectAllocationsId csharpProjectId = ProjectAllocationsId.newOne();
         ProjectAllocationsId javaProjectId = ProjectAllocationsId.newOne();
-        ProjectAllocations csharpProject = new ProjectAllocations(csharpProjectId, Allocations.none(), CSHARP);
-        ProjectAllocations javaProject = new ProjectAllocations(javaProjectId, Allocations.none(), JAVA);
+        ProjectAllocations csharpProject = new ProjectAllocations(csharpProjectId, Allocations.none(), CSHARP, JAN);
+        ProjectAllocations javaProject = new ProjectAllocations(javaProjectId, Allocations.none(), JAVA, JAN);
 
         //when
         NotSatisfiedDemands result = service.create(List.of(csharpProject, javaProject), NOW);
@@ -36,6 +35,24 @@ class CreateHourlyDemandsSummaryServiceTest {
         assertEquals(NOW, result.occurredAt());
         Map<ProjectAllocationsId, Demands> expectedMissingDemands =
                 Map.of(javaProjectId, JAVA, csharpProjectId, CSHARP);
+        assertThat(result.missingDemands()).containsExactlyInAnyOrderEntriesOf(expectedMissingDemands);
+    }
+
+    @Test
+    void takesIntoAccountOnlyProjectsWithTimeSlot() {
+        //given
+        ProjectAllocationsId withTimeSlotId = ProjectAllocationsId.newOne();
+        ProjectAllocationsId withoutTimeSlotId = ProjectAllocationsId.newOne();
+        ProjectAllocations withTimeSlot = new ProjectAllocations(withTimeSlotId, Allocations.none(), CSHARP, JAN);
+        ProjectAllocations withoutTimeSlot = new ProjectAllocations(withoutTimeSlotId, Allocations.none(), JAVA);
+
+        //when
+        NotSatisfiedDemands result = service.create(List.of(withTimeSlot, withoutTimeSlot), NOW);
+
+        //then
+        assertEquals(NOW, result.occurredAt());
+        Map<ProjectAllocationsId, Demands> expectedMissingDemands =
+                Map.of(withTimeSlotId, CSHARP);
         assertThat(result.missingDemands()).containsExactlyInAnyOrderEntriesOf(expectedMissingDemands);
     }
 
