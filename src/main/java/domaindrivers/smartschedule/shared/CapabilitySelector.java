@@ -26,7 +26,7 @@ public record CapabilitySelector(Set<Capability> capabilities, SelectingPolicy s
         return new CapabilitySelector(Set.of(capability), SelectingPolicy.ONE_OF_ALL);
     }
 
-    boolean canPerform(Capability capability) {
+    public boolean canPerform(Capability capability) {
         return capabilities.contains(capability);
     }
 

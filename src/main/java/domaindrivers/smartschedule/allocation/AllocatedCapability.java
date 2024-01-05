@@ -2,13 +2,14 @@ package domaindrivers.smartschedule.allocation;
 
 import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
 import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableResourceId;
+import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import domaindrivers.smartschedule.shared.capability.Capability;
 
 import java.util.Objects;
 import java.util.UUID;
 
-record AllocatedCapability(AllocatableCapabilityId allocatedCapabilityID, Capability capability, TimeSlot timeSlot) {
+record AllocatedCapability(AllocatableCapabilityId allocatedCapabilityID, CapabilitySelector capability, TimeSlot timeSlot) {
 
     @Override
     public boolean equals(Object o) {

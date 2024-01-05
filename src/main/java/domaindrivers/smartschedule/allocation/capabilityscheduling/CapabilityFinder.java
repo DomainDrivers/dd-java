@@ -37,6 +37,12 @@ public class CapabilityFinder {
         return createSummary(allByIdIn);
     }
 
+    public AllocatableCapabilitySummary findById(AllocatableCapabilityId allocatableCapabilityId) {
+        return allocatableResourceRepository.findById(allocatableCapabilityId)
+                .map(this::createSummary)
+                .orElse(null);
+    }
+
     private List<AllocatableCapability> filterAvailabilityInTimeSlot(List<AllocatableCapability> findAllocatableCapability, TimeSlot timeSlot) {
         Set<domaindrivers.smartschedule.availability.ResourceId> resourceIds =
                 findAllocatableCapability
@@ -53,11 +59,12 @@ public class CapabilityFinder {
     private AllocatableCapabilitiesSummary createSummary(List<AllocatableCapability> from) {
         return new AllocatableCapabilitiesSummary(
                 from.stream()
-                        .map(allocatableCapability -> new AllocatableCapabilitySummary(allocatableCapability.id(), allocatableCapability.resourceId(), allocatableCapability.capabilities(), allocatableCapability.slot()))
+                        .map(this::createSummary)
                         .collect(toList()));
     }
 
-    public boolean isPresent(AllocatableCapabilityId allocatableCapabilityId) {
-        return allocatableResourceRepository.existsById(allocatableCapabilityId);
+    private AllocatableCapabilitySummary createSummary(AllocatableCapability allocatableCapability) {
+        return new AllocatableCapabilitySummary(allocatableCapability.id(), allocatableCapability.resourceId(), allocatableCapability.capabilities(), allocatableCapability.slot());
     }
+
 }

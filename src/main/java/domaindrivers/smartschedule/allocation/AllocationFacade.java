@@ -1,12 +1,11 @@
 package domaindrivers.smartschedule.allocation;
 
-import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilitiesSummary;
-import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
-import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilitySummary;
-import domaindrivers.smartschedule.allocation.capabilityscheduling.CapabilityFinder;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.*;
+import domaindrivers.smartschedule.allocation.cashflow.CashFlowFacade;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.availability.Owner;
 import domaindrivers.smartschedule.availability.ResourceId;
+import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
@@ -54,19 +53,20 @@ public class AllocationFacade {
     }
 
     @Transactional
-    public Optional<UUID> allocateToProject(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, Capability capability, TimeSlot timeSlot) {
+    public Optional<UUID> allocateToProject(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, TimeSlot timeSlot) {
         //yes, one transaction crossing 2 modules.
-        if (!capabilityFinder.isPresent(allocatableCapabilityId)) {
+        AllocatableCapabilitySummary capability = capabilityFinder.findById(allocatableCapabilityId);
+        if (capability == null) {
             return Optional.empty();
         }
         if (!availabilityFacade.block(allocatableCapabilityId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()))) {
             return Optional.empty();
         }
-        Optional<CapabilitiesAllocated> event = allocate(projectId, allocatableCapabilityId, capability, timeSlot);
+        Optional<CapabilitiesAllocated> event = allocate(projectId, allocatableCapabilityId, capability.capabilities(), timeSlot);
         return event.map(CapabilitiesAllocated::allocatedCapabilityId);
     }
 
-    private Optional<CapabilitiesAllocated> allocate(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, Capability capability, TimeSlot timeSlot) {
+    private Optional<CapabilitiesAllocated> allocate(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, CapabilitySelector capability, TimeSlot timeSlot) {
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
         Optional<CapabilitiesAllocated> event = allocations.allocate(allocatableCapabilityId, capability, timeSlot, Instant.now(clock));
         projectAllocationsRepository.save(allocations);
@@ -99,14 +99,13 @@ public class AllocationFacade {
         if (chosen.isEmpty()) {
             return false;
         }
-        AllocatableCapabilityId toAllocate = findChosenAllocatableCapability(proposedCapabilities, chosen.get());
-        return allocate(projectId, toAllocate, capability, timeSlot).isPresent();
+        AllocatableCapabilitySummary toAllocate = findChosenAllocatableCapability(proposedCapabilities, chosen.get());
+        return allocate(projectId, toAllocate.id(), toAllocate.capabilities(), timeSlot).isPresent();
     }
 
-    private AllocatableCapabilityId findChosenAllocatableCapability(AllocatableCapabilitiesSummary proposedCapabilities, ResourceId chosen) {
+    private AllocatableCapabilitySummary findChosenAllocatableCapability(AllocatableCapabilitiesSummary proposedCapabilities, ResourceId chosen) {
         return proposedCapabilities.all().stream()
-                .map(AllocatableCapabilitySummary::id)
-                .filter(id -> id.toAvailabilityResourceId().equals(chosen))
+                .filter(summary -> summary.id().toAvailabilityResourceId().equals(chosen))
                 .findFirst()
                 .orElse(null);
     }

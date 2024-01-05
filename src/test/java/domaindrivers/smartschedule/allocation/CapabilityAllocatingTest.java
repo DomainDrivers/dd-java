@@ -1,5 +1,6 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.MockedEventPublisherConfiguration;
 import domaindrivers.smartschedule.TestDbConfiguration;
 import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
 import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableResourceId;
@@ -25,7 +26,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@Import({TestDbConfiguration.class})
+@Import({TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
 @Sql(scripts = {"classpath:schema-allocations.sql", "classpath:schema-availability.sql"})
 class CapabilityAllocatingTest {
 
@@ -96,8 +97,8 @@ class CapabilityAllocatingTest {
         ProjectAllocationsId project1 = allocationFacade.createAllocation(oneDay, Demands.of(new Demand(skill("DEBUGGING"), oneDay)));
         ProjectAllocationsId project2 = allocationFacade.createAllocation(oneDay, Demands.of(new Demand(skill("DEBUGGING"), oneDay)));
         //and
-        allocationFacade.allocateToProject(project1, allocatableCapabilityId1, skill("DEBUGGING"), oneDay);
-        allocationFacade.allocateToProject(project2, allocatableCapabilityId2, skill("DEBUGGING"), oneDay);
+        allocationFacade.allocateToProject(project1, allocatableCapabilityId1, oneDay);
+        allocationFacade.allocateToProject(project2, allocatableCapabilityId2, oneDay);
 
         //and
         ProjectAllocationsId projectId = ProjectAllocationsId.newOne();

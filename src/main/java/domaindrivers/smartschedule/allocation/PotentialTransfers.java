@@ -1,5 +1,7 @@
 package domaindrivers.smartschedule.allocation;
 
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
+import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilitySummary;
 import domaindrivers.smartschedule.allocation.cashflow.Earnings;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import domaindrivers.smartschedule.simulation.ProjectId;
@@ -7,6 +9,8 @@ import domaindrivers.smartschedule.simulation.SimulatedProject;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 record PotentialTransfers(ProjectsAllocationsSummary summary, Map<ProjectAllocationsId, Earnings> earnings) {
 
@@ -38,6 +42,24 @@ record PotentialTransfers(ProjectsAllocationsSummary summary, Map<ProjectAllocat
                         .stream()
                         .map(demand -> new domaindrivers.smartschedule.simulation.Demand(demand.capability(), demand.slot()))
                         .toList());
+    }
+
+    public PotentialTransfers transfer(ProjectAllocationsId projectTo, AllocatableCapabilitySummary capabilityToTransfer, TimeSlot forSlot) {
+        ProjectAllocationsId projectToMoveFrom = findProjectToMoveFrom(capabilityToTransfer.id(), forSlot);
+        if (projectToMoveFrom != null) {
+            return transfer(projectToMoveFrom, projectTo, new AllocatedCapability(capabilityToTransfer.id(), capabilityToTransfer.capabilities(), capabilityToTransfer.timeSlot()), forSlot);
+        }
+        return this;
+    }
+
+    private ProjectAllocationsId findProjectToMoveFrom(AllocatableCapabilityId cap, TimeSlot inSlot) {
+        return summary.projectAllocations()
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().find(cap).isPresent())
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
     }
 
 }

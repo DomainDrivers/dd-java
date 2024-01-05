@@ -3,6 +3,7 @@ package domaindrivers.smartschedule.allocation;
 import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
 import domaindrivers.smartschedule.allocation.cashflow.Earnings;
 import domaindrivers.smartschedule.optimization.OptimizationFacade;
+import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import domaindrivers.smartschedule.simulation.*;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ class PotentialTransferScenarios {
 
     static final ProjectAllocationsId BANKING_SOFT_ID = ProjectAllocationsId.newOne();
     static final ProjectAllocationsId INSURANCE_SOFT_ID = ProjectAllocationsId.newOne();
-    static final AllocatedCapability STASZEK_JAVA_MID = new AllocatedCapability(AllocatableCapabilityId.newOne(), skill("JAVA-MID"), JAN_1);
+    static final AllocatedCapability STASZEK_JAVA_MID = new AllocatedCapability(AllocatableCapabilityId.newOne(), CapabilitySelector.canJustPerform(skill("JAVA-MID")), JAN_1);
 
     PotentialTransfersService potentialTransfers = new PotentialTransfersService(new SimulationFacade(new OptimizationFacade()));
 

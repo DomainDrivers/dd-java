@@ -1,17 +1,15 @@
 package domaindrivers.smartschedule.allocation;
 
 import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableCapabilityId;
-import domaindrivers.smartschedule.allocation.capabilityscheduling.AllocatableResourceId;
-import domaindrivers.smartschedule.availability.ResourceId;
-import domaindrivers.smartschedule.shared.capability.Capability;
+import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-import java.util.UUID;
 
+import static domaindrivers.smartschedule.shared.capability.Capability.*;
 import static domaindrivers.smartschedule.shared.capability.Capability.permission;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,7 +29,7 @@ class AllocationsToProjectTest {
         ProjectAllocations allocations = ProjectAllocations.empty(PROJECT_ID);
 
         //when
-        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
 
         //then
         assertThat(event).isPresent();
@@ -45,7 +43,7 @@ class AllocationsToProjectTest {
         ProjectAllocations allocations = new ProjectAllocations(PROJECT_ID, Allocations.none(), Demands.none(), JANUARY);
 
         //when
-        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
 
         //then
         assertThat(event).isEmpty();
@@ -57,10 +55,10 @@ class AllocationsToProjectTest {
         ProjectAllocations allocations = ProjectAllocations.empty(PROJECT_ID);
 
         //and
-        allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
 
         //when
-        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
 
         //then
         assertThat(event).isEmpty();
@@ -69,13 +67,13 @@ class AllocationsToProjectTest {
     @Test
     void thereAreNoMissingDemandsWhenAllAllocated() {
         //given
-        Demands demands = Demands.of(new Demand(permission("ADMIN"), FEB_1), new Demand(Capability.skill("JAVA"), FEB_1));
+        Demands demands = Demands.of(new Demand(permission("ADMIN"), FEB_1), new Demand(skill("JAVA"), FEB_1));
         //and
         ProjectAllocations allocations = ProjectAllocations.withDemands(PROJECT_ID, demands);
         //and
-        allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
         //when
-        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, Capability.skill("JAVA"), FEB_1, WHEN);
+        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(skill("JAVA")), FEB_1, WHEN);
         //then
         assertThat(event).isPresent();
         CapabilitiesAllocated capabilitiesAllocated = event.get();
@@ -85,18 +83,18 @@ class AllocationsToProjectTest {
     @Test
     void missingDemandsArePresentWhenAllocatingForDifferentThanDemandedSlot() {
         //given
-        Demands demands = Demands.of(new Demand(permission("ADMIN"), FEB_1), new Demand(Capability.skill("JAVA"), FEB_1));
+        Demands demands = Demands.of(new Demand(permission("ADMIN"), FEB_1), new Demand(skill("JAVA"), FEB_1));
         //and
         ProjectAllocations allocations = ProjectAllocations.withDemands(PROJECT_ID, demands);
         //and
-        allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
         //when
-        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, Capability.skill("JAVA"), FEB_2, WHEN);
+        Optional<CapabilitiesAllocated> event = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(skill("JAVA")), FEB_2, WHEN);
         //then
         assertThat(event).isPresent();
-        assertThat(allocations.missingDemands()).isEqualTo(Demands.of(new Demand(Capability.skill("JAVA"), FEB_1)));
+        assertThat(allocations.missingDemands()).isEqualTo(Demands.of(new Demand(skill("JAVA"), FEB_1)));
         CapabilitiesAllocated capabilitiesAllocated = event.get();
-        assertThat(event).contains(new CapabilitiesAllocated(capabilitiesAllocated.eventId(), capabilitiesAllocated.allocatedCapabilityId(), PROJECT_ID, Demands.of(new Demand(Capability.skill("JAVA"), FEB_1)), WHEN));
+        assertThat(event).contains(new CapabilitiesAllocated(capabilitiesAllocated.eventId(), capabilitiesAllocated.allocatedCapabilityId(), PROJECT_ID, Demands.of(new Demand(skill("JAVA"), FEB_1)), WHEN));
     }
 
     @Test
@@ -104,7 +102,7 @@ class AllocationsToProjectTest {
         //given
         ProjectAllocations allocations = ProjectAllocations.empty(PROJECT_ID);
         //and
-        Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
         //when
         AllocatableCapabilityId adminId = new AllocatableCapabilityId(allocatedAdmin.get().allocatedCapabilityId());
         Optional<CapabilityReleased> event = allocations.release(adminId, FEB_1, WHEN);
@@ -129,12 +127,12 @@ class AllocationsToProjectTest {
     @Test
     void missingDemandsArePresentAfterReleasingSomeOfAllocatedCapabilities() {
         //given
-        Demand demandForJava = new Demand(Capability.skill("JAVA"), FEB_1);
+        Demand demandForJava = new Demand(skill("JAVA"), FEB_1);
         Demand demandForAdmin = new Demand(permission("ADMIN"), FEB_1);
         ProjectAllocations allocations = ProjectAllocations.withDemands(PROJECT_ID, Demands.of(demandForAdmin, demandForJava));
         //and
-        Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
-        allocations.allocate(AllocatableCapabilityId.newOne(), Capability.skill("JAVA"), FEB_1, WHEN);
+        Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
+        allocations.allocate(AllocatableCapabilityId.newOne(), CapabilitySelector.canJustPerform(skill("JAVA")), FEB_1, WHEN);
         //when
         Optional<CapabilityReleased> event = allocations.release(new AllocatableCapabilityId(allocatedAdmin.get().allocatedCapabilityId()), FEB_1, WHEN);
 
@@ -148,7 +146,7 @@ class AllocationsToProjectTest {
         //given
         ProjectAllocations allocations = ProjectAllocations.empty(PROJECT_ID);
         //and
-        Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
 
         //when
         Optional<CapabilityReleased> event = allocations.release(new AllocatableCapabilityId(allocatedAdmin.get().allocatedCapabilityId()), FEB_2, WHEN);
@@ -162,7 +160,7 @@ class AllocationsToProjectTest {
         //given
         ProjectAllocations allocations = ProjectAllocations.empty(PROJECT_ID);
         //and
-        Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        Optional<CapabilitiesAllocated> allocatedAdmin = allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
 
         //when
         TimeSlot fifteenMinutesIn1Feb =
@@ -176,23 +174,23 @@ class AllocationsToProjectTest {
         //then
         assertThat(event).contains(new CapabilityReleased(event.get().eventId(), PROJECT_ID, Demands.none(), WHEN));
         assertThat(allocations.allocations().all()).containsExactlyInAnyOrder(
-                new AllocatedCapability(ADMIN_ID, permission("ADMIN"), oneHourBefore),
-                new AllocatedCapability(ADMIN_ID, permission("ADMIN"), theRest));
+                new AllocatedCapability(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), oneHourBefore),
+                new AllocatedCapability(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), theRest));
     }
 
     @Test
     void canChangeDemands() {
         //given
-        Demands demands = Demands.of(new Demand(permission("ADMIN"), FEB_1), new Demand(Capability.skill("JAVA"), FEB_1));
+        Demands demands = Demands.of(new Demand(permission("ADMIN"), FEB_1), new Demand(skill("JAVA"), FEB_1));
         //and
         ProjectAllocations allocations = ProjectAllocations.withDemands(PROJECT_ID, demands);
         //and
-        allocations.allocate(ADMIN_ID, permission("ADMIN"), FEB_1, WHEN);
+        allocations.allocate(ADMIN_ID, CapabilitySelector.canJustPerform(permission("ADMIN")), FEB_1, WHEN);
         //when
-        Optional<ProjectAllocationsDemandsScheduled> event = allocations.addDemands(Demands.of(new Demand(Capability.skill("PYTHON"), FEB_1)), WHEN);
+        Optional<ProjectAllocationsDemandsScheduled> event = allocations.addDemands(Demands.of(new Demand(skill("PYTHON"), FEB_1)), WHEN);
         //then
-        assertThat(allocations.missingDemands()).isEqualTo(Demands.allInSameTimeSlot(FEB_1, Capability.skill("JAVA"), Capability.skill("PYTHON")));
-        assertThat(event).contains(new ProjectAllocationsDemandsScheduled(event.get().uuid(), PROJECT_ID, Demands.allInSameTimeSlot(FEB_1, Capability.skill("JAVA"), Capability.skill("PYTHON")), WHEN));
+        assertThat(allocations.missingDemands()).isEqualTo(Demands.allInSameTimeSlot(FEB_1, skill("JAVA"), skill("PYTHON")));
+        assertThat(event).contains(new ProjectAllocationsDemandsScheduled(event.get().uuid(), PROJECT_ID, Demands.allInSameTimeSlot(FEB_1, skill("JAVA"), skill("PYTHON")), WHEN));
     }
 
 

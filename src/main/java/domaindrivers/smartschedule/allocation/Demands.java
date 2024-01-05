@@ -36,7 +36,7 @@ record Demands(List<Demand> all) {
         return allocations
                 .all()
                 .stream()
-                .anyMatch(ar -> ar.capability().equals(d.capability()) && d.slot().within(ar.timeSlot()));
+                .anyMatch(ar -> ar.capability().canPerform(d.capability()) && d.slot().within(ar.timeSlot()));
 
     }
 
