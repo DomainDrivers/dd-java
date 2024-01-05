@@ -16,7 +16,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
-import java.util.UUID;
 
 import static domaindrivers.smartschedule.risk.RiskPeriodicCheckSagaStep.*;
 import static domaindrivers.smartschedule.shared.capability.Capability.skill;
@@ -34,7 +33,6 @@ class RiskPeriodicCheckSagaTest {
             Instant.parse("2021-01-05T00:00:00.00Z"));
     static final ProjectAllocationsId PROJECT_ID = ProjectAllocationsId.newOne();
     static final AllocatableCapabilityId CAPABILITY_ID = AllocatableCapabilityId.newOne();
-
 
     @Test
     void updatesInitialDemandsOnSagaCreation() {
@@ -57,16 +55,28 @@ class RiskPeriodicCheckSagaTest {
     }
 
     @Test
-    void updatesDemandsOnScheduleChange() {
+    void updateMissingDemands() {
         //given
         RiskPeriodicCheckSaga saga = new RiskPeriodicCheckSaga(PROJECT_ID, SINGLE_DEMAND);
 
         //when
-        RiskPeriodicCheckSagaStep nextStep = saga.handle(new ProjectAllocationsDemandsScheduled(PROJECT_ID, MANY_DEMANDS, Instant.now(clock)));
+        RiskPeriodicCheckSagaStep nextStep = saga.missingDemands(MANY_DEMANDS);
 
         //then
         assertEquals(DO_NOTHING, nextStep);
         assertEquals(MANY_DEMANDS, saga.missingDemands());
+    }
+
+    @Test
+    void noNewStepsOnWhenMissingDemands() {
+        //given
+        RiskPeriodicCheckSaga saga = new RiskPeriodicCheckSaga(PROJECT_ID, MANY_DEMANDS);
+
+        //when
+        RiskPeriodicCheckSagaStep nextStep = saga.missingDemands(MANY_DEMANDS);
+
+        //then
+        assertEquals(DO_NOTHING, nextStep);
     }
 
     @Test
@@ -91,14 +101,14 @@ class RiskPeriodicCheckSagaTest {
     }
 
     @Test
-    void informsAboutDemandsSatisfiedWhenDemandsRescheduled() {
+    void informsAboutDemandsSatisfiedWhenNoMissingDemands() {
         //given
         RiskPeriodicCheckSaga saga = new RiskPeriodicCheckSaga(PROJECT_ID, MANY_DEMANDS);
         //and
         saga.handle(new EarningsRecalculated(PROJECT_ID, Earnings.of(1000), Instant.now(clock)));
         //when
-        RiskPeriodicCheckSagaStep stillMissing = saga.handle(new ProjectAllocationsDemandsScheduled(PROJECT_ID, SINGLE_DEMAND, Instant.now(clock)));
-        RiskPeriodicCheckSagaStep zeroDemands = saga.handle(new ProjectAllocationsDemandsScheduled(PROJECT_ID, Demands.none(), Instant.now(clock)));
+        RiskPeriodicCheckSagaStep stillMissing = saga.missingDemands(SINGLE_DEMAND);
+        RiskPeriodicCheckSagaStep zeroDemands = saga.missingDemands(Demands.none());
 
         //then
         assertEquals(DO_NOTHING, stillMissing);
@@ -106,35 +116,9 @@ class RiskPeriodicCheckSagaTest {
     }
 
     @Test
-    void notifyAboutNoMissingDemandsOnCapabilityAllocated() {
-        //given
-        RiskPeriodicCheckSaga saga = new RiskPeriodicCheckSaga(PROJECT_ID, SINGLE_DEMAND);
-
-        //when
-        RiskPeriodicCheckSagaStep nextStep = saga.handle(new CapabilitiesAllocated(UUID.randomUUID(), PROJECT_ID, Demands.none(), Instant.now(clock)));
-
-        //then
-        assertEquals(RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED, nextStep);
-    }
-
-    @Test
-    void noNewStepsOnCapabilityAllocatedWhenMissingDemands() {
-        //given
-        RiskPeriodicCheckSaga saga = new RiskPeriodicCheckSaga(PROJECT_ID, MANY_DEMANDS);
-
-        //when
-        RiskPeriodicCheckSagaStep nextStep = saga.handle(new CapabilitiesAllocated(UUID.randomUUID(), PROJECT_ID, SINGLE_DEMAND, Instant.now(clock)));
-
-        //then
-        assertEquals(DO_NOTHING, nextStep);
-    }
-
-    @Test
     void doNothingOnResourceTakenOverWhenAfterDeadline() {
         //given
         RiskPeriodicCheckSaga saga = new RiskPeriodicCheckSaga(PROJECT_ID, MANY_DEMANDS);
-        //and
-        saga.handle(new CapabilitiesAllocated(UUID.randomUUID(), PROJECT_ID, SINGLE_DEMAND, Instant.now(clock)));
         //and
         saga.handle(new ProjectAllocationScheduled(PROJECT_ID, PROJECT_DATES, Instant.now(clock)));
 
@@ -151,8 +135,6 @@ class RiskPeriodicCheckSagaTest {
         //given
         RiskPeriodicCheckSaga saga = new RiskPeriodicCheckSaga(PROJECT_ID, MANY_DEMANDS);
         //and
-        saga.handle(new CapabilitiesAllocated(UUID.randomUUID(), PROJECT_ID, MANY_DEMANDS, Instant.now(clock)));
-        //and
         saga.handle(new ProjectAllocationScheduled(PROJECT_ID, PROJECT_DATES, Instant.now(clock)));
 
         //when
@@ -167,11 +149,9 @@ class RiskPeriodicCheckSagaTest {
     void noNextStepOnCapabilityReleased() {
         //given
         RiskPeriodicCheckSaga saga = new RiskPeriodicCheckSaga(PROJECT_ID, SINGLE_DEMAND);
-        //and
-        saga.handle(new CapabilitiesAllocated(UUID.randomUUID(), PROJECT_ID, Demands.none(), Instant.now(clock)));
 
         //when
-        RiskPeriodicCheckSagaStep nextStep = saga.handle(new CapabilityReleased(PROJECT_ID, SINGLE_DEMAND, Instant.now(clock)));
+        RiskPeriodicCheckSagaStep nextStep = saga.missingDemands(SINGLE_DEMAND);
 
         //then
         assertEquals(DO_NOTHING, nextStep);
@@ -184,7 +164,7 @@ class RiskPeriodicCheckSagaTest {
         //and
         saga.handle(new EarningsRecalculated(PROJECT_ID, Earnings.of(1000), Instant.now(clock)));
         //and
-        saga.handle(new CapabilitiesAllocated(UUID.randomUUID(), PROJECT_ID, Demands.none(), Instant.now(clock)));
+        saga.missingDemands(Demands.none());
         //and
         saga.handle(new ProjectAllocationScheduled(PROJECT_ID, PROJECT_DATES, Instant.now(clock)));
 

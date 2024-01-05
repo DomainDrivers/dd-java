@@ -1,14 +1,14 @@
 package domaindrivers.smartschedule.allocation;
 
 
-import domaindrivers.smartschedule.shared.Event;
+import domaindrivers.smartschedule.shared.PrivateEvent;
 
 import java.time.Instant;
 import java.util.UUID;
 
-public record ProjectAllocationsDemandsScheduled(UUID uuid, ProjectAllocationsId projectId, Demands missingDemands, Instant occurredAt) implements Event {
+record ProjectAllocationsDemandsScheduled(UUID uuid, ProjectAllocationsId projectId, Demands missingDemands, Instant occurredAt) implements PrivateEvent {
 
-    public ProjectAllocationsDemandsScheduled(ProjectAllocationsId projectId, Demands missingDemands, Instant occuredAt) {
+    ProjectAllocationsDemandsScheduled(ProjectAllocationsId projectId, Demands missingDemands, Instant occuredAt) {
         this(UUID.randomUUID(), projectId, missingDemands, occuredAt);
     }
 

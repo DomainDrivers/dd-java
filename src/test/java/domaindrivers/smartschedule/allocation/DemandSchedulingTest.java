@@ -51,24 +51,4 @@ class DemandSchedulingTest {
     }
 
 
-    @Test
-    void projectDemandsScheduledEventIsEmittedAfterDefiningDemands() {
-        //given
-        ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
-
-        //when
-        allocationFacade.scheduleProjectAllocationDemands(projectId, Demands.of(JAVA));
-
-        //then
-        Mockito.verify(eventsPublisher).publish(Mockito.argThat(isProjectDemandsScheduledEvent(projectId, Demands.of(JAVA))));
-    }
-
-    ArgumentMatcher<ProjectAllocationsDemandsScheduled> isProjectDemandsScheduledEvent(ProjectAllocationsId projectId, Demands demands) {
-        return event ->
-                event.uuid() != null &&
-                        event.projectId().equals(projectId) &&
-                        event.missingDemands().equals(demands) &&
-                        event.occurredAt() != null;
-    }
-
 }

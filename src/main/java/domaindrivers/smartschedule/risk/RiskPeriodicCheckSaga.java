@@ -53,29 +53,28 @@ class RiskPeriodicCheckSaga {
     public RiskPeriodicCheckSaga() {
     }
 
+    public RiskPeriodicCheckSaga(ProjectAllocationsId projectId) {
+        this.riskSagaId = RiskPeriodicCheckSagaId.newOne();
+        this.projectId = projectId;
+        this.missingDemands = Demands.none();
+    }
+
     boolean areDemandsSatisfied() {
         return missingDemands.all().isEmpty();
     }
 
-    Demands missingDemands() {
-        return missingDemands;
-    }
-
-    RiskPeriodicCheckSagaStep handle(EarningsRecalculated event) {
-        earnings = event.earnings();
-        return RiskPeriodicCheckSagaStep.DO_NOTHING;
-    }
-
-    RiskPeriodicCheckSagaStep handle(ProjectAllocationsDemandsScheduled event) {
-        missingDemands = event.missingDemands();
-        if (areDemandsSatisfied()) {
-            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED;
-        }
-        return RiskPeriodicCheckSagaStep.DO_NOTHING;
+    RiskPeriodicCheckSagaStep missingDemands(Demands missingDemands) {
+        //TODO implement
+        return null;
     }
 
     RiskPeriodicCheckSagaStep handle(ProjectAllocationScheduled event) {
         deadline = event.fromTo().to();
+        return RiskPeriodicCheckSagaStep.DO_NOTHING;
+    }
+
+    RiskPeriodicCheckSagaStep handle(EarningsRecalculated event) {
+        earnings = event.earnings();
         return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
@@ -84,19 +83,6 @@ class RiskPeriodicCheckSaga {
             return RiskPeriodicCheckSagaStep.DO_NOTHING;
         }
         return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_POSSIBLE_RISK;
-    }
-
-    RiskPeriodicCheckSagaStep handle(CapabilityReleased event) {
-        this.missingDemands = event.missingDemands();
-        return RiskPeriodicCheckSagaStep.DO_NOTHING;
-    }
-
-    RiskPeriodicCheckSagaStep handle(CapabilitiesAllocated event) {
-        this.missingDemands = event.missingDemands();
-        if (areDemandsSatisfied()) {
-            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED;
-        }
-        return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
     RiskPeriodicCheckSagaStep handleWeeklyCheck(Instant when) {
@@ -131,4 +117,7 @@ class RiskPeriodicCheckSaga {
         return deadline;
     }
 
+    public Demands missingDemands() {
+        return missingDemands;
+    }
 }

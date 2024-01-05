@@ -113,8 +113,8 @@ public class AllocationFacade {
     @Transactional
     public void editProjectDates(ProjectAllocationsId projectId, TimeSlot fromTo) {
         ProjectAllocations projectAllocations = projectAllocationsRepository.findById(projectId).orElseThrow();
-        projectAllocations.defineSlot(fromTo, clock.instant());
-        eventsPublisher.publish(new ProjectAllocationScheduled(projectId, fromTo, Instant.now(clock)));
+        Optional<ProjectAllocationScheduled> projectDatesSet = projectAllocations.defineSlot(fromTo, clock.instant());
+        projectDatesSet.ifPresent(eventsPublisher::publish);
     }
 
     @Transactional
@@ -123,9 +123,8 @@ public class AllocationFacade {
                 projectAllocationsRepository.findById(projectId)
                         .orElseGet(() -> ProjectAllocations.empty(projectId));
         Optional<ProjectAllocationsDemandsScheduled> event = projectAllocations.addDemands(demands, Instant.now(clock));
-        event.ifPresent(
-                eventsPublisher::publish
-        );
+        //event could be stored in a local store
+        //always remember about transactional boundaries
         projectAllocationsRepository.save(projectAllocations);
     }
 

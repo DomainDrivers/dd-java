@@ -72,13 +72,30 @@ class RiskPeriodicCheckSagaDispatcherE2ETest {
         Capability java = Capability.skill("JAVA-MID-JUNIOR");
         Demand javaOneDayDemand = new Demand(java, ONE_DAY_LONG);
         //and
-        riskSagaDispatcher.handle(new ProjectAllocationsDemandsScheduled(projectId, Demands.of(javaOneDayDemand), Instant.now(clock)));
+        riskSagaDispatcher.handle(NotSatisfiedDemands.forOneProject(projectId, Demands.of(javaOneDayDemand), Instant.now(clock)));
 
         //when
-        riskSagaDispatcher.handle(new CapabilitiesAllocated(UUID.randomUUID(), projectId, Demands.none(), Instant.now(clock)));
+        riskSagaDispatcher.handle(NotSatisfiedDemands.allSatisfied(projectId, Instant.now(clock)));
 
         //then
         Mockito.verify(riskPushNotification).notifyDemandsSatisfied(projectId);
+    }
+
+    @Test
+    void informsAboutDemandSatisfiedForAllProjects() {
+        //given
+        ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
+        ProjectAllocationsId projectId2 = ProjectAllocationsId.newOne();
+        //and
+        Map<ProjectAllocationsId, Demands> noMissingDemands =
+                Map.of(projectId, Demands.none(),
+                        projectId2, Demands.none());
+        //when
+        riskSagaDispatcher.handle(new NotSatisfiedDemands(noMissingDemands, Instant.now(clock)));
+
+        //then
+        Mockito.verify(riskPushNotification).notifyDemandsSatisfied(projectId);
+        Mockito.verify(riskPushNotification).notifyDemandsSatisfied(projectId2);
     }
 
     @Test
@@ -88,9 +105,9 @@ class RiskPeriodicCheckSagaDispatcherE2ETest {
         Capability java = Capability.skill("JAVA-MID-JUNIOR");
         Demand javaOneDayDemand = new Demand(java, ONE_DAY_LONG);
         //and
-        riskSagaDispatcher.handle(new ProjectAllocationsDemandsScheduled(projectId, Demands.of(javaOneDayDemand), Instant.now(clock)));
+        riskSagaDispatcher.handle(NotSatisfiedDemands.forOneProject(projectId, Demands.of(javaOneDayDemand), Instant.now(clock)));
         //and
-        riskSagaDispatcher.handle(new CapabilitiesAllocated(UUID.randomUUID(),projectId, Demands.none(), Instant.now(clock)));
+        riskSagaDispatcher.handle(NotSatisfiedDemands.allSatisfied(projectId, Instant.now(clock)));
         //and
         riskSagaDispatcher.handle(new ProjectAllocationScheduled(projectId, PROJECT_DATES, Instant.now(clock)));
 
@@ -114,110 +131,8 @@ class RiskPeriodicCheckSagaDispatcherE2ETest {
         Mockito.verifyNoInteractions(riskPushNotification);
     }
 
-    @Test
-    void weeklyCheckDoesNothingWhenNotCloseToDeadlineAndDemandsNotSatisfied() {
-        //given
-        ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
-        Capability java = Capability.skill("JAVA-MID-JUNIOR");
-        Demand javaOneDayDemand = new Demand(java, ONE_DAY_LONG);
-        //and
-        riskSagaDispatcher.handle(new ProjectAllocationsDemandsScheduled(projectId, Demands.of(javaOneDayDemand), Instant.now(clock)));
-        //and
-        riskSagaDispatcher.handle(new ProjectAllocationScheduled(projectId, PROJECT_DATES, Instant.now(clock)));
-
-        //when
-        itIsDaysBeforeDeadline(100);
-        riskSagaDispatcher.handleWeeklyCheck();
-
-        //then
-        Mockito.verifyNoMoreInteractions(riskPushNotification);
-    }
-
-    @Test
-    void weeklyCheckDoesNothingWhenCloseToDeadlineAndDemandsSatisfied() {
-        //given
-        ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
-        Capability java = Capability.skill("JAVA-MID-JUNIOR-UNIQUE");
-        Demand javaOneDayDemand = new Demand(java, ONE_DAY_LONG);
-        riskSagaDispatcher.handle(new ProjectAllocationsDemandsScheduled(projectId, Demands.of(javaOneDayDemand), Instant.now(clock)));
-        //and
-        riskSagaDispatcher.handle(new EarningsRecalculated(projectId, Earnings.of(10), Instant.now(clock)));
-        //and
-        riskSagaDispatcher.handle(new CapabilitiesAllocated(UUID.randomUUID(),projectId, Demands.none(), Instant.now(clock)));
-        //and
-        riskSagaDispatcher.handle(new ProjectAllocationScheduled(projectId, PROJECT_DATES, Instant.now(clock)));
-
-        //when
-        itIsDaysBeforeDeadline(100);
-        Mockito.reset(riskPushNotification);
-        riskSagaDispatcher.handleWeeklyCheck();
-
-        //then
-        Mockito.verifyNoMoreInteractions(riskPushNotification);
-    }
-
-    @Test
-    void findReplacementsWhenDeadlineClose() {
-        //given
-        ProjectAllocationsId projectId = ProjectAllocationsId.newOne();
-        Capability java = Capability.skill("JAVA-MID-JUNIOR");
-        Demand javaOneDayDemand = new Demand(java, ONE_DAY_LONG);
-        riskSagaDispatcher.handle(new ProjectAllocationsDemandsScheduled(projectId, Demands.of(javaOneDayDemand), Instant.now(clock)));
-        //and
-        riskSagaDispatcher.handle(new EarningsRecalculated(projectId, Earnings.of(10), Instant.now(clock)));
-        //and
-        riskSagaDispatcher.handle(new ProjectAllocationScheduled(projectId, PROJECT_DATES, Instant.now(clock)));
-        //and
-        AllocatableCapabilityId employee = thereIsEmployeeWithSkills(Set.of(java), ONE_DAY_LONG);
-
-        //when
-        Mockito.reset(riskPushNotification);
-        itIsDaysBeforeDeadline(20);
-        riskSagaDispatcher.handleWeeklyCheck();
-
-        //then
-        Mockito.verify(riskPushNotification).notifyAboutAvailability(eq(projectId), argThat(employeeWasSuggestedForDemand(javaOneDayDemand, employee)));
-    }
-
-    @Test
-    void suggestResourcesFromDifferentProjects() {
-        //given
-        ProjectAllocationsId highValueProject = ProjectAllocationsId.newOne();
-        ProjectAllocationsId lowValueProject = ProjectAllocationsId.newOne();
-        //and
-        Capability java = Capability.skill("JAVA-MID-JUNIOR-SUPER-UNIQUE");
-        Demand javaOneDayDemand = new Demand(java, ONE_DAY_LONG);
-        //and
-        allocationFacade.scheduleProjectAllocationDemands(highValueProject, Demands.of(javaOneDayDemand));
-        cashFlowFacade.addIncomeAndCost(highValueProject, Income.of(10000), Cost.of(10));
-        allocationFacade.scheduleProjectAllocationDemands(lowValueProject, Demands.of(javaOneDayDemand));
-        cashFlowFacade.addIncomeAndCost(lowValueProject, Income.of(100), Cost.of(10));
-        //and
-        AllocatableCapabilityId employee = thereIsEmployeeWithSkills(Set.of(java), ONE_DAY_LONG);
-        allocationFacade.allocateToProject(lowValueProject, employee, ONE_DAY_LONG);
-        //and
-        riskSagaDispatcher.handle(new ProjectAllocationScheduled(highValueProject, PROJECT_DATES, Instant.now(clock)));
-
-        //when
-        Mockito.reset(riskPushNotification);
-        allocationFacade.editProjectDates(highValueProject, PROJECT_DATES);
-        allocationFacade.editProjectDates(lowValueProject, PROJECT_DATES);
-        itIsDaysBeforeDeadline(1);
-        riskSagaDispatcher.handleWeeklyCheck();
-
-        //then
-        Mockito.verify(riskPushNotification, timeout(1000)).notifyProfitableRelocationFound(highValueProject, employee);
-    }
-
-    ArgumentMatcher<Map<Demand, AllocatableCapabilitiesSummary>> employeeWasSuggestedForDemand(Demand demand, AllocatableCapabilityId allocatableCapabilityId) {
-        return suggestions -> suggestions.get(demand).all().stream().anyMatch(suggestion -> suggestion.id().equals(allocatableCapabilityId));
-    }
-
-    AllocatableCapabilityId thereIsEmployeeWithSkills(Set<Capability> skills, TimeSlot inSlot) {
-        EmployeeId staszek = employeeFacade.addEmployee("Staszek", "Staszkowski", Seniority.MID, skills, Capability.permissions());
-        List<AllocatableCapabilityId> allocatableCapabilityIds = employeeFacade.scheduleCapabilities(staszek, inSlot);
-        assert allocatableCapabilityIds.size() == 1;
-        return allocatableCapabilityIds.get(0);
+    ArgumentMatcher<Map<Demand, AllocatableCapabilitiesSummary>> employeeWasSuggestedForDemand(Demand demand, EmployeeId employee) {
+        return suggestions -> suggestions.get(demand).all().stream().anyMatch(suggestion -> suggestion.allocatableResourceId().equals(employee.toAllocatableResourceId()));
     }
 
     void itIsDaysBeforeDeadline(int days) {

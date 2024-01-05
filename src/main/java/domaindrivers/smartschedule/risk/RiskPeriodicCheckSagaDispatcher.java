@@ -11,9 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RiskPeriodicCheckSagaDispatcher {
@@ -35,14 +33,28 @@ public class RiskPeriodicCheckSagaDispatcher {
     @Async
     @EventListener
         //remember about transactions spanning saga and potential external system
-    void handle(ProjectAllocationsDemandsScheduled event) {
-        RiskPeriodicCheckSaga found = riskSagaRepository.findByProjectId(event.projectId());
-        if (found == null) {
-            found = new RiskPeriodicCheckSaga(event.projectId(), event.missingDemands());
-        }
+    void handle(ProjectAllocationScheduled event) {
+        RiskPeriodicCheckSaga found = riskSagaRepository.findByProjectIdOrCreate(event.projectId());
         RiskPeriodicCheckSagaStep nextStep = found.handle(event);
         this.riskSagaRepository.save(found);
         perform(nextStep, found);
+    }
+
+
+    @Async
+    @EventListener
+        //remember about transactions spanning saga and potential external system
+    void handle(NotSatisfiedDemands event) {
+        List<RiskPeriodicCheckSaga> sagas = riskSagaRepository.findByProjectIdInOrElseCreate(new ArrayList<>(event.missingDemands().keySet()));
+        Map<RiskPeriodicCheckSaga, RiskPeriodicCheckSagaStep> nextSteps = new HashMap<>();
+        for (RiskPeriodicCheckSaga saga : sagas) {
+            Demands missingDemands = event.missingDemands().get(saga.projectId());
+            RiskPeriodicCheckSagaStep nextStep = saga.missingDemands(missingDemands);
+            nextSteps.put(saga, nextStep);
+        }
+        this.riskSagaRepository.saveAll(sagas);
+        nextSteps
+                .forEach((saga, nextStep) -> perform(nextStep, saga));
     }
 
     @Async
@@ -56,36 +68,6 @@ public class RiskPeriodicCheckSagaDispatcher {
         RiskPeriodicCheckSagaStep nextStep = found.handle(event);
         this.riskSagaRepository.save(found);
         perform(nextStep, found);
-    }
-
-    @Async
-    @EventListener
-        //remember about transactions spanning saga and potential external system
-    void handle(ProjectAllocationScheduled event) {
-        RiskPeriodicCheckSaga found = riskSagaRepository.findByProjectId(event.projectId());
-        RiskPeriodicCheckSagaStep nextStep = found.handle(event);
-        this.riskSagaRepository.save(found);
-        perform(nextStep, found);
-    }
-
-    @Async
-    @EventListener
-        //remember about transactions spanning saga and potential external system
-    void handle(CapabilitiesAllocated event) {
-        RiskPeriodicCheckSaga saga = riskSagaRepository.findByProjectId(event.projectId());
-        RiskPeriodicCheckSagaStep nextStep = saga.handle(event);
-        this.riskSagaRepository.save(saga);
-        perform(nextStep, saga);
-    }
-
-    @Async
-    @EventListener
-        //remember about transactions spanning saga and potential external system
-    void handle(CapabilityReleased event) {
-        RiskPeriodicCheckSaga saga = riskSagaRepository.findByProjectId(event.projectId());
-        RiskPeriodicCheckSagaStep nextStep = saga.handle(event);
-        this.riskSagaRepository.save(saga);
-        perform(nextStep, saga);
     }
 
     @Async
