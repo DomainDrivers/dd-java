@@ -64,8 +64,11 @@ class RiskPeriodicCheckSaga {
     }
 
     RiskPeriodicCheckSagaStep missingDemands(Demands missingDemands) {
-        //TODO implement
-        return null;
+        this.missingDemands = missingDemands;
+        if (areDemandsSatisfied()) {
+            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED;
+        }
+        return RiskPeriodicCheckSagaStep.DO_NOTHING;
     }
 
     RiskPeriodicCheckSagaStep handle(ProjectAllocationScheduled event) {
