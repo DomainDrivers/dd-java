@@ -23,7 +23,7 @@ import static domaindrivers.smartschedule.planning.schedule.assertions.ScheduleA
 
 @SpringBootTest
 @Import({TestDbConfiguration.class, TaskExecutorConfiguration.class})
-@Sql(scripts = {"classpath:schema-risk.sql", "classpath:schema-planning.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql"})
+@Sql(scripts = {"classpath:schema-risk.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql"})
 
 class SpecializedWaterfallTest {
 

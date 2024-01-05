@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Import({TestDbConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql", "classpath:schema-availability.sql"})
+@Sql(scripts = {"classpath:schema-availability.sql"})
 class RDTest {
 
     static final TimeSlot JANUARY = new TimeSlot(Instant.parse("2020-01-01T00:00:00.00Z"), Instant.parse("2020-01-31T00:00:00.00Z"));

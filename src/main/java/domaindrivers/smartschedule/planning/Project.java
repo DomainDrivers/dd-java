@@ -11,44 +11,33 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Version;
 import org.hibernate.annotations.Type;
+import org.springframework.data.redis.core.RedisHash;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Entity(name = "projects")
+@RedisHash("projects")
 class Project {
 
-    @EmbeddedId
-    private ProjectId id = ProjectId.newOne();
-
-    @Version
-    private int version;
+    private String id;
 
     private String name;
 
-    @Type(JsonType.class)
-    @Column(columnDefinition = "jsonb")
     private ParallelStagesList parallelizedStages;
 
-    @Type(JsonType.class)
-    @Column(columnDefinition = "jsonb")
     private DemandsPerStage demandsPerStage;
 
-    @Type(JsonType.class)
-    @Column(columnDefinition = "jsonb")
     private Demands allDemands;
 
-    @Type(JsonType.class)
-    @Column(columnDefinition = "jsonb")
     private ChosenResources chosenResources;
 
-    @Type(JsonType.class)
-    @Column(columnDefinition = "jsonb")
     private Schedule schedule;
 
     Project(String name, ParallelStagesList parallelizedStages) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.parallelizedStages = parallelizedStages;
         this.allDemands = Demands.none();
@@ -115,7 +104,7 @@ class Project {
     }
 
     ProjectId id() {
-        return id;
+        return new ProjectId(UUID.fromString(id));
     }
 
 }

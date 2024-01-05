@@ -1,15 +1,18 @@
 package domaindrivers.smartschedule;
 
+import domaindrivers.smartschedule.planning.PlanningDbTestConfiguration;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import javax.sql.DataSource;
 
 @TestConfiguration(proxyBeanMethods = false)
+@Import(PlanningDbTestConfiguration.class)
 public class TestDbConfiguration {
 
     @Bean

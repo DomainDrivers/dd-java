@@ -44,61 +44,59 @@ public class PlanningFacade {
         return project.id();
     }
 
-    @Transactional
     public void defineStartDate(ProjectId projectId, Instant possibleStartDate) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addSchedule(possibleStartDate);
+        projectRepository.save(project);
     }
 
-    @Transactional
     public void defineProjectStages(ProjectId projectId, Stage... stages) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         ParallelStagesList parallelizedStages = parallelization.of(new HashSet<>(asList(stages)));
         project.defineStages(parallelizedStages);
+        projectRepository.save(project);
     }
 
-    @Transactional
     public void addDemands(ProjectId projectId, Demands demands) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addDemands(demands);
+        projectRepository.save(project);
         eventsPublisher.publish(new CapabilitiesDemanded(projectId, project.getAllDemands(), clock.instant()));
     }
 
-    @Transactional
     public void defineDemandsPerStage(ProjectId projectId, DemandsPerStage demandsPerStage) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addDemandsPerStage(demandsPerStage);
+        projectRepository.save(project);
         eventsPublisher.publish(new CapabilitiesDemanded(projectId, project.getAllDemands(), clock.instant()));
     }
 
-    @Transactional
     public void defineResourcesWithinDates(ProjectId projectId, Set<ResourceId> chosenResources, TimeSlot timeBoundaries) {
         planChosenResourcesService.defineResourcesWithinDates(projectId, chosenResources, timeBoundaries);
     }
 
-    @Transactional
     public void adjustStagesToResourceAvailability(ProjectId projectId, TimeSlot timeBoundaries, Stage... stages) {
         planChosenResourcesService.adjustStagesToResourceAvailability(projectId, timeBoundaries, stages);
     }
 
-    @Transactional
     public void planCriticalStageWithResource(ProjectId projectId, Stage criticalStage, ResourceId resourceId, TimeSlot stageTimeSlot) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addSchedule(criticalStage, stageTimeSlot);
         eventsPublisher.publish(new CriticalStagePlanned(projectId, stageTimeSlot, resourceId, clock.instant()));
+        projectRepository.save(project);
     }
 
-    @Transactional
     public void planCriticalStage(ProjectId projectId, Stage criticalStage, TimeSlot stageTimeSlot) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addSchedule(criticalStage, stageTimeSlot);
         eventsPublisher.publish(new CriticalStagePlanned(projectId, stageTimeSlot, null, clock.instant()));
+        projectRepository.save(project);
     }
 
-    @Transactional
     public void defineManualSchedule(ProjectId projectId, Schedule schedule) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addSchedule(schedule);
+        projectRepository.save(project);
     }
 
     public Duration durationOf(Stage... stages) {
@@ -125,7 +123,6 @@ public class PlanningFacade {
                 .map(this::toSummary)
                 .toList();
     }
-
 
     private ProjectCard toSummary(Project project) {
         return new ProjectCard(project.id(), project.name(), project.getParallelizedStages(), project.getAllDemands(), project.getSchedule(), project.getDemandsPerStage(), project.getChosenResources());

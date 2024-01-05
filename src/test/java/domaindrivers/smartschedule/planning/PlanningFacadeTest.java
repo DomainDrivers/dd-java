@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 class PlanningFacadeTest {
 
     EventsPublisher eventsPublisher = Mockito.mock(EventsPublisher.class);
-    PlanningFacade projectFacade = PlanningTestConfiguration.planningFacade(eventsPublisher, new InMemoryProjectRepository());
+    PlanningFacade projectFacade = PlanningTestConfiguration.planningFacadeWithInMemoryDb(eventsPublisher);
 
     @Test
     void canCreateProjectAndLoadProjectCard() {

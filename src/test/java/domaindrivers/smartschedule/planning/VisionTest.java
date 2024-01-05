@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Import({TestDbConfiguration.class, TaskExecutorConfiguration.class})
-@Sql(scripts = {"classpath:schema-risk.sql", "classpath:schema-planning.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql"})
+@Sql(scripts = {"classpath:schema-risk.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql"})
 class VisionTest {
 
     static final Instant JAN_1 = Instant.parse("2020-01-01T00:00:00.00Z");

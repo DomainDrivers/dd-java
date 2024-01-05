@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @Import({TestDbConfiguration.class, TaskExecutorConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-risk.sql"})
+@Sql(scripts = {"classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-risk.sql"})
 class VerifyEnoughDemandsDuringPlanningTest {
 
     @MockBean

@@ -32,14 +32,13 @@ public class PlanChosenResources {
         this.clock = clock;
     }
 
-    @Transactional
     public void defineResourcesWithinDates(ProjectId projectId, Set<ResourceId> chosenResources, TimeSlot timeBoundaries) {
         Project project = projectRepository.findById(projectId).orElseThrow();
         project.addChosenResources(new ChosenResources(chosenResources, timeBoundaries));
+        projectRepository.save(project);
         eventsPublisher.publish(new NeededResourcesChosen(projectId, chosenResources, timeBoundaries, clock.instant()));
     }
 
-    @Transactional
     public void adjustStagesToResourceAvailability(ProjectId projectId, TimeSlot timeBoundaries, Stage... stages) {
         Set<ResourceId> neededResources = neededResources(stages);
         Project project = projectRepository.findById(projectId).orElseThrow();
@@ -47,6 +46,7 @@ public class PlanChosenResources {
         Calendars neededResourcesCalendars = availabilityFacade.loadCalendars(neededResources, timeBoundaries);
         Schedule schedule = createScheduleAdjustingToCalendars(neededResourcesCalendars, List.of(stages));
         project.addSchedule(schedule);
+        projectRepository.save(project);
     }
 
     private Schedule createScheduleAdjustingToCalendars(Calendars neededResourcesCalendars, List<Stage> stages) {

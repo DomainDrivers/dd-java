@@ -40,7 +40,7 @@ import static org.mockito.Mockito.timeout;
 
 @SpringBootTest
 @Import({TestDbConfiguration.class, MockedClockConfiguration.class, TaskExecutorConfiguration.class})
-@Sql(scripts = {"classpath:schema-planning.sql", "classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql", "classpath:schema-risk.sql", "classpath:schema-cashflow.sql"})
+@Sql(scripts = {"classpath:schema-availability.sql", "classpath:schema-resources.sql", "classpath:schema-allocations.sql", "classpath:schema-risk.sql", "classpath:schema-cashflow.sql"})
 class RiskPeriodicCheckSagaDispatcherE2ETest {
 
     static final TimeSlot ONE_DAY_LONG = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
