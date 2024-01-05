@@ -21,7 +21,7 @@ public class CapabilityFinder {
         this.allocatableResourceRepository = allocatableResourceRepository;
     }
 
-    AllocatableCapabilitiesSummary findAvailableCapabilities(Capability capability, TimeSlot timeSlot) {
+    public AllocatableCapabilitiesSummary findAvailableCapabilities(Capability capability, TimeSlot timeSlot) {
         List<AllocatableCapability> findAllocatableCapability = allocatableResourceRepository.findByCapabilityWithin(capability.name(), capability.type(), timeSlot.from(), timeSlot.to());
         List<AllocatableCapability> found = filterAvailabilityInTimeSlot(findAllocatableCapability, timeSlot);
         return createSummary(found);

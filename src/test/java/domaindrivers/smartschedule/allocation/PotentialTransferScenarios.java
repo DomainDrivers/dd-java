@@ -8,7 +8,6 @@ import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import domaindrivers.smartschedule.simulation.*;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -28,7 +27,7 @@ class PotentialTransferScenarios {
     static final ProjectAllocationsId INSURANCE_SOFT_ID = ProjectAllocationsId.newOne();
     static final AllocatedCapability STASZEK_JAVA_MID = new AllocatedCapability(AllocatableCapabilityId.newOne(), CapabilitySelector.canJustPerform(skill("JAVA-MID")), JAN_1);
 
-    PotentialTransfersService potentialTransfers = new PotentialTransfersService(new SimulationFacade(new OptimizationFacade()));
+    PotentialTransfersService potentialTransfers = new PotentialTransfersService(new SimulationFacade(new OptimizationFacade()), null, null);
 
     @Test
     void simulatesMovingCapabilitiesToDifferentProject() {

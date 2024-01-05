@@ -9,7 +9,7 @@ import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import java.util.Set;
 import java.util.UUID;
 
-record AvailableResourceCapability(UUID resourceId, CapabilitySelector capabilitySelector, TimeSlot timeSlot) implements CapacityDimension {
+public record AvailableResourceCapability(UUID resourceId, CapabilitySelector capabilitySelector, TimeSlot timeSlot) implements CapacityDimension {
 
     AvailableResourceCapability(UUID resourceId, Capability capability, TimeSlot timeSlot) {
        this(resourceId, CapabilitySelector.canJustPerform(capability), timeSlot);

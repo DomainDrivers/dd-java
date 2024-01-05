@@ -4,6 +4,9 @@ import domaindrivers.smartschedule.allocation.ProjectAllocationsId;
 import domaindrivers.smartschedule.shared.EventsPublisher;
 
 import java.time.Clock;
+import java.util.Map;
+
+import static java.util.stream.Collectors.toMap;
 
 
 public class CashFlowFacade {
@@ -29,6 +32,13 @@ public class CashFlowFacade {
     public Earnings find(ProjectAllocationsId projectId) {
         Cashflow byId = cashflowRepository.findById(projectId).orElseThrow();
         return byId.earnings();
+    }
+
+    public Map<ProjectAllocationsId, Earnings> findAllEarnings() {
+        return cashflowRepository
+                .findAll()
+                .stream()
+                .collect(toMap(cashflow -> cashflow.projectId, Cashflow::earnings));
     }
 
 }

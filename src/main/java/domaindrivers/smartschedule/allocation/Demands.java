@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-record Demands(List<Demand> all) {
+public record Demands(List<Demand> all) {
 
-    static Demands none() {
+    public static Demands none() {
         return new Demands(List.of());
     }
 
-    static Demands of(Demand ... demands) {
+    public static Demands of(Demand... demands) {
         return new Demands(List.of(demands));
     }
 

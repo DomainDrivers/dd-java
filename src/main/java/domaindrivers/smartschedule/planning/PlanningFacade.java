@@ -118,6 +118,15 @@ public class PlanningFacade {
                 .toList();
     }
 
+    public List<ProjectCard> loadAll() {
+        return projectRepository
+                .findAll()
+                .stream()
+                .map(this::toSummary)
+                .toList();
+    }
+
+
     private ProjectCard toSummary(Project project) {
         return new ProjectCard(project.id(), project.name(), project.getParallelizedStages(), project.getAllDemands(), project.getSchedule(), project.getDemandsPerStage(), project.getChosenResources());
     }

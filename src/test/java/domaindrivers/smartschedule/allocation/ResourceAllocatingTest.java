@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
-@Import({TestDbConfiguration.class})
+@Import({TestDbConfiguration.class, MockedEventPublisherConfiguration.class})
 @Sql(scripts = {"classpath:schema-allocations.sql", "classpath:schema-availability.sql"})
 class ResourceAllocatingTest {
 

@@ -13,6 +13,10 @@ public class SimulationFacade {
         this.optimizationFacade = optimizationFacade;
     }
 
+    public SimulationFacade() {
+        this.optimizationFacade = new OptimizationFacade();
+    }
+
     public double profitAfterBuyingNewCapability(List<SimulatedProject> projectsSimulations, SimulatedCapabilities capabilitiesWithoutNewOne, AdditionalPricedCapability newPricedCapability) {
         SimulatedCapabilities capabilitiesWithNewResource = capabilitiesWithoutNewOne.add(newPricedCapability.availableResourceCapability());
         Result resultWithout = optimizationFacade.calculate(toItems(projectsSimulations), toCapacity(capabilitiesWithoutNewOne), Comparator.comparing(Item::value).reversed());
