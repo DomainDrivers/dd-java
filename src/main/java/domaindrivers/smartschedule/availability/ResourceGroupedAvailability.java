@@ -92,6 +92,12 @@ class ResourceGroupedAvailability {
                 .allMatch(ra -> ra.isDisabledBy(owner));
     }
 
+    boolean isEntirelyWithParentId(ResourceId parentId) {
+        return resourceAvailabilities
+                .stream()
+                .allMatch(ra -> ra.resourceParentId().equals(parentId));
+    }
+
     List<ResourceAvailability> findBlockedBy(Owner owner) {
         return resourceAvailabilities
                 .stream()

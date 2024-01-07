@@ -16,9 +16,13 @@ public record TimeSlot(Instant from, Instant to) {
     }
 
     public static TimeSlot createDailyTimeSlotAtUTC(int year, int month, int day) {
+        return createTimeSlotAtUTCOfDuration(year, month, day, Duration.ofDays(1));
+    }
+
+    public static TimeSlot createTimeSlotAtUTCOfDuration(int year, int month, int day, Duration duration) {
         LocalDate thisDay = LocalDate.of(year, month, day);
         Instant from = thisDay.atStartOfDay(ZoneId.of("UTC")).toInstant();
-        return new TimeSlot(from, from.plus(1, DAYS));
+        return new TimeSlot(from, from.plus(duration));
     }
 
     public static TimeSlot createMonthlyTimeSlotAtUTC(int year, int month) {

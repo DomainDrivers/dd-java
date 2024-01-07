@@ -10,16 +10,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SegmentsTest {
 
-    @Test
-    void unitHasToBeMultipleOf15Minutes() {
-        //expect
-        assertThrows(IllegalArgumentException.class, () -> SegmentInMinutes.of(20));
-        assertThrows(IllegalArgumentException.class, () -> SegmentInMinutes.of(18));
-        assertThrows(IllegalArgumentException.class, () -> SegmentInMinutes.of(7));
-        assertNotNull(SegmentInMinutes.of(15));
-        assertNotNull(SegmentInMinutes.of(30));
-        assertNotNull(SegmentInMinutes.of(45));
+    public static final int FIFTEEN_MINUTES_SEGMENT_DURATION = 15;
 
+    @Test
+    void unitHasToBeMultipleOfDefaultSlotDurationInMinutes() {
+        //expect
+        assertThrows(IllegalArgumentException.class, () -> SegmentInMinutes.of(20, FIFTEEN_MINUTES_SEGMENT_DURATION));
+        assertThrows(IllegalArgumentException.class, () -> SegmentInMinutes.of(18, FIFTEEN_MINUTES_SEGMENT_DURATION));
+        assertThrows(IllegalArgumentException.class, () -> SegmentInMinutes.of(7, FIFTEEN_MINUTES_SEGMENT_DURATION));
+        assertNotNull(SegmentInMinutes.of(15, FIFTEEN_MINUTES_SEGMENT_DURATION));
+        assertNotNull(SegmentInMinutes.of(30, FIFTEEN_MINUTES_SEGMENT_DURATION));
+        assertNotNull(SegmentInMinutes.of(45, FIFTEEN_MINUTES_SEGMENT_DURATION));
     }
 
     @Test
@@ -30,7 +31,7 @@ class SegmentsTest {
         TimeSlot timeSlot = new TimeSlot(start, end);
 
         //when
-        List<TimeSlot> segments = Segments.split(timeSlot, SegmentInMinutes.of(15));
+        List<TimeSlot> segments = Segments.split(timeSlot, SegmentInMinutes.of(15, FIFTEEN_MINUTES_SEGMENT_DURATION));
 
         //then
         assertEquals(4, segments.size());
@@ -53,7 +54,7 @@ class SegmentsTest {
         TimeSlot timeSlot = new TimeSlot(start, end);
 
         //when
-        List<TimeSlot> segments = Segments.split(timeSlot, SegmentInMinutes.of(90));
+        List<TimeSlot> segments = Segments.split(timeSlot, SegmentInMinutes.of(90, FIFTEEN_MINUTES_SEGMENT_DURATION));
 
         //then
         assertEquals(1, segments.size());
@@ -70,7 +71,7 @@ class SegmentsTest {
         TimeSlot timeSlot = new TimeSlot(start, end);
 
         //when
-        TimeSlot segment = Segments.normalizeToSegmentBoundaries(timeSlot, SegmentInMinutes.of(90));
+        TimeSlot segment = Segments.normalizeToSegmentBoundaries(timeSlot, SegmentInMinutes.of(90, FIFTEEN_MINUTES_SEGMENT_DURATION));
 
         //then
         assertEquals(Instant.parse("2023-09-09T00:00:00Z"), segment.from());
@@ -84,7 +85,7 @@ class SegmentsTest {
         Instant start = Instant.parse("2023-09-09T00:10:00Z");
         Instant end = Instant.parse("2023-09-09T00:59:00Z");
         TimeSlot timeSlot = new TimeSlot(start, end);
-        SegmentInMinutes oneHour = SegmentInMinutes.of(60);
+        SegmentInMinutes oneHour = SegmentInMinutes.of(60, FIFTEEN_MINUTES_SEGMENT_DURATION);
 
         //when
         List<TimeSlot> segments = Segments.split(timeSlot, oneHour);
@@ -104,7 +105,7 @@ class SegmentsTest {
         TimeSlot timeSlot = new TimeSlot(start, end);
 
         //when
-        List<TimeSlot> segments = new SlotToSegments().apply(timeSlot, SegmentInMinutes.of(30));
+        List<TimeSlot> segments = new SlotToSegments().apply(timeSlot, SegmentInMinutes.of(30, FIFTEEN_MINUTES_SEGMENT_DURATION));
 
         //then
         assertEquals(2, segments.size());

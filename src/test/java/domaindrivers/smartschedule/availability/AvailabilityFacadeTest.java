@@ -11,9 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
+import static domaindrivers.smartschedule.availability.segment.Segments.DEFAULT_SEGMENT_DURATION_IN_MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -56,8 +58,9 @@ class AvailabilityFacadeTest {
         availabilityFacade.createResourceSlots(resourceId2, differentParentId, oneDay);
 
         //then
-        assertEquals(96, availabilityFacade.findByParentId(parentId, oneDay).size());
-        assertEquals(96, availabilityFacade.findByParentId(differentParentId, oneDay).size());
+        assertThat(availabilityFacade.findByParentId(parentId, oneDay).isEntirelyWithParentId(parentId)).isTrue();
+        assertThat(availabilityFacade.findByParentId(differentParentId, oneDay).isEntirelyWithParentId(differentParentId)).isTrue();
+
     }
 
     @Test
@@ -107,7 +110,6 @@ class AvailabilityFacadeTest {
         //then
         assertTrue(result);
         ResourceGroupedAvailability resourceAvailabilities = availabilityFacade.find(resourceId, oneDay);
-        assertEquals(96, resourceAvailabilities.size());
         assertThat(resourceAvailabilities.isDisabledEntirelyBy(owner)).isTrue();
     }
 
@@ -210,25 +212,26 @@ class AvailabilityFacadeTest {
     void oneSegmentCanBeTakenBySomeoneElseAfterRealising() {
         //given
         ResourceId resourceId = ResourceId.newOne();
-        TimeSlot oneDay = TimeSlot.createDailyTimeSlotAtUTC(2021, 1, 1);
-        TimeSlot fifteenMinutes = new TimeSlot(oneDay.from(), oneDay.from().plus(15, ChronoUnit.MINUTES));
+        Duration durationOfSevenSlots = Duration.ofMinutes(7 * DEFAULT_SEGMENT_DURATION_IN_MINUTES);
+        TimeSlot sevenSlots = TimeSlot.createTimeSlotAtUTCOfDuration(2021, 1, 1, durationOfSevenSlots);
+        TimeSlot minimumSlot = new TimeSlot(sevenSlots.from(), sevenSlots.from().plus(DEFAULT_SEGMENT_DURATION_IN_MINUTES, ChronoUnit.MINUTES));
         Owner owner = Owner.newOne();
-        availabilityFacade.createResourceSlots(resourceId, oneDay);
+        availabilityFacade.createResourceSlots(resourceId, sevenSlots);
         //and
-        availabilityFacade.block(resourceId, oneDay, owner);
+        availabilityFacade.block(resourceId, sevenSlots, owner);
         //and
-        availabilityFacade.release(resourceId, fifteenMinutes, owner);
+        availabilityFacade.release(resourceId, minimumSlot, owner);
 
         //when
         Owner newRequester = Owner.newOne();
-        boolean result = availabilityFacade.block(resourceId, fifteenMinutes, newRequester);
+        boolean result = availabilityFacade.block(resourceId, minimumSlot, newRequester);
 
         //then
         assertTrue(result);
-        Calendar dailyCalendar = availabilityFacade.loadCalendar(resourceId, oneDay);
-        assertThat(dailyCalendar.availableSlots()).isEmpty();
-        assertThat(dailyCalendar.takenBy(owner)).containsExactlyElementsOf(oneDay.leftoverAfterRemovingCommonWith(fifteenMinutes));
-        assertThat(dailyCalendar.takenBy(newRequester)).containsExactly(fifteenMinutes);
+        Calendar entireCalendar = availabilityFacade.loadCalendar(resourceId, sevenSlots);
+        assertThat(entireCalendar.availableSlots()).isEmpty();
+        assertThat(entireCalendar.takenBy(owner)).containsExactlyElementsOf(sevenSlots.leftoverAfterRemovingCommonWith(minimumSlot));
+        assertThat(entireCalendar.takenBy(newRequester)).containsExactly(minimumSlot);
     }
 
     @Test
