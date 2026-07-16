@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.io.UncheckedIOException;
+import java.time.Clock;
 import java.util.UUID;
 
 @Configuration
@@ -44,5 +45,10 @@ public class EventingConfiguration {
                 .registerModule(new JavaTimeModule())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    }
+
+    @Bean
+    OutboxRelay outboxRelay(OutboxRepository outboxRepository, ApplicationEventPublisher applicationEventPublisher, ObjectMapper outboxObjectMapper, Clock clock) {
+        return new OutboxRelay(outboxRepository, applicationEventPublisher, outboxObjectMapper, clock);
     }
 }

@@ -15,4 +15,14 @@ public class AvailabilityConfiguration {
     AvailabilityFacade availabilityFacade(JdbcTemplate jdbcTemplate, EventsPublisher eventsPublisher, Clock clock) {
         return new AvailabilityFacade(new ResourceAvailabilityRepository(jdbcTemplate), new ResourceAvailabilityReadModel(jdbcTemplate), eventsPublisher, clock);
     }
+
+    @Bean
+    ProcessedMessages processedMessages() {
+        return new ProcessedMessages();
+    }
+
+    @Bean
+    ReleaseResourceHandler releaseResourceHandler(AvailabilityFacade availabilityFacade, ProcessedMessages processedMessages) {
+        return new ReleaseResourceHandler(availabilityFacade, processedMessages);
+    }
 }
