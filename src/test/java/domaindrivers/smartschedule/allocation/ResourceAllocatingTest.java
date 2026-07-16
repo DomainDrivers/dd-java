@@ -10,9 +10,12 @@ import domaindrivers.smartschedule.availability.Calendars;
 import domaindrivers.smartschedule.availability.Owner;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.CapabilitySelector;
+import domaindrivers.smartschedule.shared.EventsPublisher;
 import domaindrivers.smartschedule.shared.capability.Capability;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -42,6 +45,9 @@ class ResourceAllocatingTest {
 
     @Autowired
     CapabilityScheduler capabilityScheduler;
+
+    @Autowired
+    EventsPublisher eventsPublisher;
 
     @Test
     void canAllocateCapabilityToProject() {
@@ -133,8 +139,17 @@ class ResourceAllocatingTest {
         assertTrue(result);
         ProjectsAllocationsSummary summary = allocationFacade.findAllProjectsAllocations();
         assertThat(summary.projectAllocations().get(projectId).all()).isEmpty();
-        assertThat(availabilityIsReleased(oneDay, allocatableCapabilityId, projectId)).isTrue();
+        Mockito.verify(eventsPublisher)
+                .publish(Mockito.argThat(releaseResource(allocatableCapabilityId.toAvailabilityResourceId(), oneDay, projectId)));
+    }
 
+    ArgumentMatcher<ReleaseResource> releaseResource(ResourceId resourceId, TimeSlot timeSlot, ProjectAllocationsId projectId) {
+        return event ->
+                event.resourceId().equals(resourceId) &&
+                        event.timeSlot().equals(timeSlot) &&
+                        event.owner().equals(Owner.of(projectId.id())) &&
+                        event.occurredAt() != null &&
+                        event.eventId() != null;
     }
 
     AllocatableCapabilityId scheduleCapabilities(AllocatableResourceId allocatableResourceId, CapabilitySelector capabilities, TimeSlot oneDay) {
@@ -157,10 +172,5 @@ class ResourceAllocatingTest {
                 .allMatch(calendar -> calendar.takenBy(Owner.of(projectId.id())).equals(List.of(period)));
 
     }
-
-    boolean availabilityIsReleased(TimeSlot oneDay, AllocatableCapabilityId allocatableCapabilityId, ProjectAllocationsId projectId) {
-        return !availabilityWasBlocked(allocatableCapabilityId.toAvailabilityResourceId(), oneDay, projectId);
-    }
-
 
 }
