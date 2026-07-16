@@ -76,7 +76,7 @@ public class AllocationFacade {
     @Transactional
     public boolean releaseFromProject(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, TimeSlot timeSlot) {
         //can release not scheduled capability - at least for now. Hence no check to capabilityFinder
-        availabilityFacade.release(allocatableCapabilityId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()));
+        eventsPublisher.publish(new ReleaseResource(allocatableCapabilityId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()), Instant.now(clock)));
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
         Optional<CapabilityReleased> event = allocations.release(allocatableCapabilityId, timeSlot, Instant.now(clock));
         projectAllocationsRepository.save(allocations);
