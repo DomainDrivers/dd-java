@@ -4,6 +4,7 @@ import domaindrivers.smartschedule.allocation.capabilityscheduling.*;
 import domaindrivers.smartschedule.allocation.cashflow.CashFlowFacade;
 import domaindrivers.smartschedule.availability.AvailabilityFacade;
 import domaindrivers.smartschedule.availability.Owner;
+import domaindrivers.smartschedule.availability.ReleaseResource;
 import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.CapabilitySelector;
 import domaindrivers.smartschedule.shared.EventsPublisher;

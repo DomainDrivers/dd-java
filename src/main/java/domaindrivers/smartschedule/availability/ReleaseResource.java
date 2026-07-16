@@ -1,7 +1,5 @@
-package domaindrivers.smartschedule.allocation;
+package domaindrivers.smartschedule.availability;
 
-import domaindrivers.smartschedule.availability.Owner;
-import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.OutboxEvent;
 import domaindrivers.smartschedule.shared.PublishedEvent;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;

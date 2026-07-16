@@ -1,7 +1,5 @@
-package domaindrivers.smartschedule.allocation;
+package domaindrivers.smartschedule.availability;
 
-import domaindrivers.smartschedule.availability.Owner;
-import domaindrivers.smartschedule.availability.ResourceId;
 import domaindrivers.smartschedule.shared.timeslot.TimeSlot;
 import io.eventdriven.strictland.Json;
 import io.eventdriven.strictland.MessageContract;
