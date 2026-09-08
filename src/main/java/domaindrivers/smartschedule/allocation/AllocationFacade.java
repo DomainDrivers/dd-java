@@ -68,9 +68,9 @@ public class AllocationFacade {
 
     private Optional<CapabilitiesAllocated> allocate(ProjectAllocationsId projectId, AllocatableCapabilityId allocatableCapabilityId, CapabilitySelector capability, TimeSlot timeSlot) {
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
-        Optional<CapabilitiesAllocated> event = allocations.allocate(allocatableCapabilityId, capability, timeSlot, Instant.now(clock));
-        projectAllocationsRepository.save(allocations);
-        return event;
+        Decision<CapabilitiesAllocated> decision = ProjectAllocations.decide(allocations, new Allocate(allocatableCapabilityId, capability, timeSlot, Instant.now(clock)));
+        projectAllocationsRepository.save(decision.nextState());
+        return decision.event();
     }
 
     @Transactional
@@ -78,9 +78,9 @@ public class AllocationFacade {
         //can release not scheduled capability - at least for now. Hence no check to capabilityFinder
         availabilityFacade.release(allocatableCapabilityId.toAvailabilityResourceId(), timeSlot, Owner.of(projectId.id()));
         ProjectAllocations allocations = projectAllocationsRepository.findById(projectId).orElseThrow();
-        Optional<CapabilityReleased> event = allocations.release(allocatableCapabilityId, timeSlot, Instant.now(clock));
-        projectAllocationsRepository.save(allocations);
-        return event.isPresent();
+        Decision<CapabilityReleased> decision = ProjectAllocations.decide(allocations, new Release(allocatableCapabilityId, timeSlot, Instant.now(clock)));
+        projectAllocationsRepository.save(decision.nextState());
+        return decision.event().isPresent();
     }
 
     @Transactional
@@ -113,8 +113,9 @@ public class AllocationFacade {
     @Transactional
     public void editProjectDates(ProjectAllocationsId projectId, TimeSlot fromTo) {
         ProjectAllocations projectAllocations = projectAllocationsRepository.findById(projectId).orElseThrow();
-        Optional<ProjectAllocationScheduled> projectDatesSet = projectAllocations.defineSlot(fromTo, clock.instant());
-        projectDatesSet.ifPresent(eventsPublisher::publish);
+        Decision<ProjectAllocationScheduled> decision = ProjectAllocations.decide(projectAllocations, new DefineSlot(fromTo, clock.instant()));
+        projectAllocationsRepository.save(decision.nextState());
+        decision.event().ifPresent(eventsPublisher::publish);
     }
 
     @Transactional
@@ -122,10 +123,11 @@ public class AllocationFacade {
         ProjectAllocations projectAllocations =
                 projectAllocationsRepository.findById(projectId)
                         .orElseGet(() -> ProjectAllocations.empty(projectId));
-        Optional<ProjectAllocationsDemandsScheduled> event = projectAllocations.addDemands(demands, Instant.now(clock));
+        Decision<ProjectAllocationsDemandsScheduled> decision =
+                ProjectAllocations.decide(projectAllocations, new AddDemands(demands, Instant.now(clock)));
         //event could be stored in a local store
         //always remember about transactional boundaries
-        projectAllocationsRepository.save(projectAllocations);
+        projectAllocationsRepository.save(decision.nextState());
     }
 
 }

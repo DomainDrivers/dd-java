@@ -52,6 +52,54 @@ class ProjectAllocations {
         this.demands = demands;
     }
 
+    static Decision<CapabilitiesAllocated> decide(ProjectAllocations state, Allocate command) {
+        AllocatedCapability allocatedCapability =
+                new AllocatedCapability(command.allocatableCapabilityId(), command.capability(), command.requestedSlot());
+        Allocations newAllocations = state.allocations.add(allocatedCapability);
+        if (noNewAllocation(state.allocations, newAllocations) || !withinTimeSlot(state.timeSlot, command.requestedSlot())) {
+            return new Decision<>(state, Optional.empty());
+        }
+        ProjectAllocations nextState = new ProjectAllocations(state.projectId, newAllocations, state.demands, state.timeSlot);
+        CapabilitiesAllocated event = new CapabilitiesAllocated(
+                allocatedCapability.allocatedCapabilityID().getId(), state.projectId, nextState.missingDemands(), command.when());
+        return new Decision<>(nextState, Optional.of(event));
+    }
+
+    private static boolean noNewAllocation(Allocations before, Allocations after) {
+        return after.equals(before);
+    }
+
+    private static boolean withinTimeSlot(TimeSlot projectTimeSlot, TimeSlot requestedSlot) {
+        if (projectTimeSlot == null || projectTimeSlot.equals(TimeSlot.empty())) {
+            return true;
+        }
+        return requestedSlot.within(projectTimeSlot);
+    }
+
+    static Decision<CapabilityReleased> decide(ProjectAllocations state, Release command) {
+        Allocations newAllocations = state.allocations.remove(command.allocatableCapabilityId(), command.slot());
+        if (newAllocations.equals(state.allocations)) {
+            return new Decision<>(state, Optional.empty());
+        }
+        ProjectAllocations nextState = new ProjectAllocations(state.projectId, newAllocations, state.demands, state.timeSlot);
+        CapabilityReleased event = new CapabilityReleased(state.projectId, nextState.missingDemands(), command.when());
+        return new Decision<>(nextState, Optional.of(event));
+    }
+
+    static Decision<ProjectAllocationScheduled> decide(ProjectAllocations state, DefineSlot command) {
+        ProjectAllocations nextState = new ProjectAllocations(state.projectId, state.allocations, state.demands, command.timeSlot());
+        ProjectAllocationScheduled event = new ProjectAllocationScheduled(state.projectId, command.timeSlot(), command.when());
+        return new Decision<>(nextState, Optional.of(event));
+    }
+
+    static Decision<ProjectAllocationsDemandsScheduled> decide(ProjectAllocations state, AddDemands command) {
+        Demands nextDemands = state.demands.withNew(command.newDemands());
+        ProjectAllocations nextState = new ProjectAllocations(state.projectId, state.allocations, nextDemands, state.timeSlot);
+        ProjectAllocationsDemandsScheduled event =
+                new ProjectAllocationsDemandsScheduled(state.projectId, nextState.missingDemands(), command.when());
+        return new Decision<>(nextState, Optional.of(event));
+    }
+
     Optional<CapabilitiesAllocated> allocate(AllocatableCapabilityId allocatableCapabilityId, CapabilitySelector capability, TimeSlot requestedSlot, Instant when) {
         AllocatedCapability allocatedCapability = new AllocatedCapability(allocatableCapabilityId, capability, requestedSlot);
         Allocations newAllocations = allocations.add(allocatedCapability);
