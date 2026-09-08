@@ -25,8 +25,10 @@ class DomainProjectAllocationsDriver implements ProjectAllocationsDsl {
     public DemandsScheduled scheduleDemands(ProjectAllocationsId project, Demands demands, Instant when) {
         ProjectAllocations current = projects.computeIfAbsent(project,
                 id -> demands.all().isEmpty() ? ProjectAllocations.empty(id) : ProjectAllocations.withDemands(id, Demands.none()));
-        ProjectAllocationsDemandsScheduled event = current.addDemands(demands, when).orElseThrow();
-        return new DemandsScheduled(current.demands(), current.missingDemands(), Optional.of(event.occurredAt()));
+        Decision<ProjectAllocationsDemandsScheduled> decision = ProjectAllocations.decide(current, new AddDemands(demands, when));
+        projects.put(project, decision.nextState());
+        ProjectAllocationsDemandsScheduled event = decision.event().orElseThrow();
+        return new DemandsScheduled(decision.nextState().demands(), decision.nextState().missingDemands(), Optional.of(event.occurredAt()));
     }
 
     @Override
@@ -38,7 +40,9 @@ class DomainProjectAllocationsDriver implements ProjectAllocationsDsl {
     public Optional<AllocationOutcome> allocate(ProjectAllocationsId project, AllocatableCapabilityId capabilityId,
                                                   CapabilitySelector capability, TimeSlot requestedSlot, Instant when) {
         ProjectAllocations current = projects.get(project);
-        return current.allocate(capabilityId, capability, requestedSlot, when)
+        Decision<CapabilitiesAllocated> decision = ProjectAllocations.decide(current, new Allocate(capabilityId, capability, requestedSlot, when));
+        projects.put(project, decision.nextState());
+        return decision.event()
                 .map(event -> new AllocationOutcome(event.allocatedCapabilityId(), event.missingDemands(), Optional.of(event.occurredAt())));
     }
 
@@ -46,14 +50,18 @@ class DomainProjectAllocationsDriver implements ProjectAllocationsDsl {
     public Optional<ReleaseOutcome> release(ProjectAllocationsId project, AllocatableCapabilityId capabilityId,
                                              TimeSlot slot, Instant when) {
         ProjectAllocations current = projects.get(project);
-        return current.release(capabilityId, slot, when)
+        Decision<CapabilityReleased> decision = ProjectAllocations.decide(current, new Release(capabilityId, slot, when));
+        projects.put(project, decision.nextState());
+        return decision.event()
                 .map(event -> new ReleaseOutcome(event.missingDemands(), Optional.of(event.occurredAt())));
     }
 
     @Override
     public SlotDefined changeProjectSlot(ProjectAllocationsId project, TimeSlot slot, Instant when) {
         ProjectAllocations current = projects.get(project);
-        ProjectAllocationScheduled event = current.defineSlot(slot, when).orElseThrow();
+        Decision<ProjectAllocationScheduled> decision = ProjectAllocations.decide(current, new DefineSlot(slot, when));
+        projects.put(project, decision.nextState());
+        ProjectAllocationScheduled event = decision.event().orElseThrow();
         return new SlotDefined(event.fromTo(), event.occurredAt());
     }
 
